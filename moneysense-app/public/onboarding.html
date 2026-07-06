@@ -404,7 +404,7 @@
       await supabaseClient.from('users').upsert({ id: session.user.id, money_relationship: value });
     }
 
-    setTimeout(() => goTo(5), 2500);
+    setTimeout(() => goTo(5), 4500);
   }
 
   async function selectBaseline(value, el) {
@@ -417,7 +417,7 @@
       await supabaseClient.from('users').upsert({ id: session.user.id, weekly_comfortable_range: value });
     }
 
-    setTimeout(() => goTo(6), 300);
+    setTimeout(() => goTo(6), 4500);
   }
 
   function renderEntries() {
