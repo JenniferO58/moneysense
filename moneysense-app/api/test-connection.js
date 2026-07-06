@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../_lib/supabase.js';
+import { supabaseAdmin } from './_lib/supabase.js';
 
 // Simple connection test — no auth required, just confirms the Vercel
 // function can reach Supabase using the service role key.
