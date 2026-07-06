@@ -51,18 +51,17 @@
     padding: 24px 20px;
     flex-direction: column;
     position: relative;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
   }
   .step.active {
     display: flex;
-    opacity: 1;
-    transform: translateY(0);
   }
-  .step.leaving {
-    opacity: 0;
-    transform: translateY(-8px);
+
+  #step-1 .center-content {
+    animation: splashFadeIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes splashFadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   .progress { display: flex; gap: 5px; margin-bottom: 36px; }
@@ -208,7 +207,7 @@
 
   <div id="step-3-form">
     <h1>Let's get started</h1>
-    <p class="subtitle" style="margin-bottom:24px;">Your email creates your account and keeps your data synced. From your next visit, you'll unlock with Face ID instead.</p>
+    <p class="subtitle" style="margin-bottom:24px;">Your email creates your account and keeps your data synced. From your next visit, you'll be able to unlock with Face ID or a PIN instead.</p>
     <input id="emailInput" type="email" placeholder="Email address" />
     <div class="subtitle" id="emailError" style="color:#E8794F; display:none; margin-bottom:8px;"></div>
     <button class="primary" onclick="tryContinueFromEmail()">Continue</button>
@@ -302,8 +301,8 @@
 
   let relationship = null;
   let baseline = null;
-  let entries = [];
-  let categories = [];
+  let entries = []; // local list, just for showing "added so far" during onboarding
+  let categories = []; // real categories fetched from Supabase
   let selectedCategoryId = null;
 
   function goTo(n) {
@@ -311,21 +310,34 @@
     const next = document.getElementById('step-' + n);
     if (current === next) return;
 
+    const duration = 450;
+
     if (current) {
-      current.classList.remove('active');
-      current.classList.add('leaving');
+      current.animate(
+        [
+          { opacity: 1, transform: 'translateY(0)' },
+          { opacity: 0, transform: 'translateY(-8px)' }
+        ],
+        { duration, easing: 'ease-in-out', fill: 'forwards' }
+      );
     }
 
     next.style.display = 'flex';
-    void next.offsetWidth;
     next.classList.add('active');
+    next.animate(
+      [
+        { opacity: 0, transform: 'translateY(8px)' },
+        { opacity: 1, transform: 'translateY(0)' }
+      ],
+      { duration, easing: 'ease-in-out', fill: 'forwards' }
+    );
 
     setTimeout(() => {
       if (current) {
-        current.classList.remove('leaving');
+        current.classList.remove('active');
         current.style.display = 'none';
       }
-    }, 450);
+    }, duration);
   }
 
   async function loadCategories() {
@@ -376,6 +388,8 @@
     }
 
     errorEl.style.display = 'none';
+    // Wait for the real click, don't advance yet — this is the actual
+    // authentication moment, not something to fake past.
     document.getElementById('step-3-form').style.display = 'none';
     document.getElementById('step-3-waiting').style.display = 'block';
   }
@@ -445,6 +459,8 @@
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { goTo(8); return; }
 
+    // Real persisted total from the database, not local state —
+    // stays accurate even if something failed to save along the way.
     const { data: transactions } = await supabaseClient
       .from('transactions')
       .select('amount')
@@ -452,6 +468,8 @@
     const total = (transactions ?? []).reduce((s, t) => s + Number(t.amount), 0);
     document.getElementById('revealTotal').textContent = '£' + total.toFixed(2);
 
+    // The real AI call — personalization (relationship, empty-state
+    // handling) already lives in this endpoint, so no local copy needed.
     try {
       const res = await fetch('/api/summary/generate', {
         method: 'POST',
@@ -472,15 +490,18 @@
   }
 
   async function init() {
-    await loadCategories();
+    loadCategories(); // background load — not needed until step 6,
+                       // must never block the splash transition
 
     const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (!session) {
-      setTimeout(() => goTo(2), 1100);
+      setTimeout(() => goTo(2), 1500);
       return;
     }
 
+    // Returning from the magic link, or already signed in — resume at
+    // the right step instead of restarting onboarding from scratch.
     const { data: profile } = await supabaseClient
       .from('users')
       .select('money_relationship, weekly_comfortable_range')
