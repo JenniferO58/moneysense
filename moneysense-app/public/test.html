@@ -26,9 +26,9 @@
 
 <h2>Step 2: Add a transaction</h2>
 <input id="amount" type="number" placeholder="Amount" step="0.01" />
-<select id="category"></select>
-<div id="catError" style="color:#C0392B; font-size:13px;"></div>
 <input id="note" type="text" placeholder="Note (optional)" />
+<div id="categoryGrid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0;"></div>
+<div id="catError" style="color:#C0392B; font-size:13px;"></div>
 <button onclick="addTransaction()">Add transaction</button>
 <div id="status"></div>
 
@@ -51,10 +51,10 @@
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
     const statusEl = document.getElementById('authStatus');
     if (error) {
-      statusEl.textContent = 'Error: ' + error.message;
+      statusEl.textContent = '❌ Error: ' + error.message;
       statusEl.style.color = '#C0392B';
     } else {
-      statusEl.textContent = 'Signed in with password';
+      statusEl.textContent = '✅ Signed in with password';
       statusEl.style.color = '#2E7D32';
       statusEl.style.fontWeight = '600';
     }
@@ -70,16 +70,19 @@
     });
     const statusEl = document.getElementById('authStatus');
     if (error) {
-      statusEl.textContent = 'Error: ' + error.message;
+      statusEl.textContent = '❌ Error: ' + error.message;
       statusEl.style.color = '#C0392B';
       btn.textContent = 'Send magic link';
     } else {
-      statusEl.textContent = 'Link sent — check your email, click it, then come back to this tab.';
+      statusEl.textContent = '✅ Link sent — check your email, click it, then come back to this tab.';
       statusEl.style.color = '#2E7D32';
       statusEl.style.fontWeight = '600';
       btn.textContent = 'Link sent ✓';
     }
   }
+
+  let categories = [];
+  let selectedCategoryId = null;
 
   async function loadCategories() {
     const { data, error } = await supabaseClient.from('categories').select('*').order('sort_order');
@@ -91,8 +94,27 @@
       document.getElementById('catError').textContent = 'No categories returned — check RLS policy on categories table.';
       return;
     }
-    const select = document.getElementById('category');
-    select.innerHTML = data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    categories = data;
+    renderCategoryGrid();
+  }
+
+  function renderCategoryGrid() {
+    const grid = document.getElementById('categoryGrid');
+    grid.innerHTML = categories.map(c =>
+      `<div data-id="${c.id}" onclick="selectCategory('${c.id}')"
+        style="padding:8px 4px; text-align:center; font-size:12px; border:1px solid #ddd; border-radius:8px; cursor:pointer; background:white;">
+        ${c.name}
+      </div>`
+    ).join('');
+  }
+
+  function selectCategory(id) {
+    selectedCategoryId = id;
+    document.querySelectorAll('#categoryGrid > div').forEach(el => {
+      const active = el.dataset.id === id;
+      el.style.background = active ? '#1C1C1E' : 'white';
+      el.style.color = active ? 'white' : 'black';
+    });
   }
 
   async function addTransaction() {
@@ -103,8 +125,12 @@
     }
 
     const amount = document.getElementById('amount').value;
-    const category_id = document.getElementById('category').value;
     const note = document.getElementById('note').value;
+
+    if (!selectedCategoryId) {
+      document.getElementById('status').textContent = 'Please choose a category.';
+      return;
+    }
 
     const res = await fetch('/api/transactions/create', {
       method: 'POST',
@@ -112,7 +138,7 @@
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`
       },
-      body: JSON.stringify({ amount: parseFloat(amount), category_id, note })
+      body: JSON.stringify({ amount: parseFloat(amount), category_id: selectedCategoryId, note })
     });
 
     const result = await res.json();
@@ -120,7 +146,13 @@
       ? 'Added!'
       : 'Error: ' + result.error;
 
-    if (res.ok) loadTransactions();
+    if (res.ok) {
+      loadTransactions();
+      document.getElementById('amount').value = '';
+      document.getElementById('note').value = '';
+      selectedCategoryId = null;
+      renderCategoryGrid();
+    }
   }
 
   async function loadTransactions() {
@@ -144,7 +176,7 @@
     const { data: { session } } = await supabaseClient.auth.getSession();
     const statusEl = document.getElementById('authStatus');
     if (session) {
-      statusEl.textContent = 'Signed in as ' + session.user.email;
+      statusEl.textContent = '✅ Signed in as ' + session.user.email;
       statusEl.style.color = '#2E7D32';
       statusEl.style.fontWeight = '600';
     }
