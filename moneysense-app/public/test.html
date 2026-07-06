@@ -30,27 +30,27 @@
 <div id="transactionList"></div>
 
 <script>
-  const supabase = window.supabase.createClient(
+  const supabaseClient = window.supabase.createClient(
     'https://grsrjczmrmtstbsezbxj.supabase.co',
     'sb_publishable_gp0oWf_Ao0N9UxOwtKxi9g_-U23nCyL'
   );
 
   async function signIn() {
     const email = document.getElementById('email').value;
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabaseClient.auth.signInWithOtp({ email });
     document.getElementById('authStatus').textContent = error
       ? 'Error: ' + error.message
       : 'Check your email for the magic link, then come back to this tab.';
   }
 
   async function loadCategories() {
-    const { data } = await supabase.from('categories').select('*').order('sort_order');
+    const { data } = await supabaseClient.from('categories').select('*').order('sort_order');
     const select = document.getElementById('category');
     select.innerHTML = data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   }
 
   async function addTransaction() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
       document.getElementById('status').textContent = 'Please sign in first (check your email for the link).';
       return;
@@ -78,10 +78,10 @@
   }
 
   async function loadTransactions() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) return;
 
-    const { data } = await supabase
+    const { data } = await supabaseClient
       .from('transactions')
       .select('*, categories(name)')
       .order('created_at', { ascending: false })
