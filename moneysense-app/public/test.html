@@ -51,10 +51,10 @@
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
     const statusEl = document.getElementById('authStatus');
     if (error) {
-      statusEl.textContent = '❌ Error: ' + error.message;
+      statusEl.textContent = 'Error: ' + error.message;
       statusEl.style.color = '#C0392B';
     } else {
-      statusEl.textContent = '✅ Signed in with password';
+      statusEl.textContent = 'Signed in with password';
       statusEl.style.color = '#2E7D32';
       statusEl.style.fontWeight = '600';
     }
@@ -70,11 +70,11 @@
     });
     const statusEl = document.getElementById('authStatus');
     if (error) {
-      statusEl.textContent = '❌ Error: ' + error.message;
+      statusEl.textContent = 'Error: ' + error.message;
       statusEl.style.color = '#C0392B';
       btn.textContent = 'Send magic link';
     } else {
-      statusEl.textContent = '✅ Link sent — check your email, click it, then come back to this tab.';
+      statusEl.textContent = 'Check your email for the link.';
       statusEl.style.color = '#2E7D32';
       statusEl.style.fontWeight = '600';
       btn.textContent = 'Link sent ✓';
