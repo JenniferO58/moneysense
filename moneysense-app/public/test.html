@@ -8,7 +8,7 @@
   body { font-family: -apple-system, sans-serif; max-width: 420px; margin: 40px auto; padding: 0 16px; }
   input, select, button { display: block; width: 100%; padding: 10px; margin: 8px 0; font-size: 15px; }
   button { background: #1C1C1E; color: white; border: none; border-radius: 8px; cursor: pointer; }
-  #status, #authStatus, #catError { color: #888; font-size: 13px; margin-top: 10px; }
+  #status { color: #888; font-size: 13px; margin-top: 10px; }
   #transactionList { margin-top: 20px; }
   .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
 </style>
@@ -23,7 +23,6 @@
 <h2>Step 2: Add a transaction</h2>
 <input id="amount" type="number" placeholder="Amount" step="0.01" />
 <select id="category"></select>
-<div id="catError"></div>
 <input id="note" type="text" placeholder="Note (optional)" />
 <button onclick="addTransaction()">Add transaction</button>
 <div id="status"></div>
@@ -38,20 +37,26 @@
 
   async function signIn() {
     const email = document.getElementById('email').value;
+    const btn = event.target;
+    btn.textContent = 'Sending...';
     const { error } = await supabaseClient.auth.signInWithOtp({ email });
-    document.getElementById('authStatus').textContent = error
-      ? 'Error: ' + error.message
-      : 'Check your email for the magic link, then come back to this tab.';
+    const statusEl = document.getElementById('authStatus');
+    if (error) {
+      statusEl.textContent = 'Error: ' + error.message;
+      statusEl.style.color = '#C0392B';
+      btn.textContent = 'Send magic link';
+    } else {
+      statusEl.textContent = 'Link sent — check your email, click it, then come back to this tab.';
+      statusEl.style.color = '#2E7D32';
+      statusEl.style.fontWeight = '600';
+      btn.textContent = 'Link sent ✓';
+    }
   }
 
   async function loadCategories() {
-    const { data, error } = await supabaseClient.from('categories').select('*').order('sort_order');
-    if (error) {
-      document.getElementById('catError').textContent = 'Category load error: ' + error.message;
-      return;
-    }
+    const { data } = await supabaseClient.from('categories').select('*').order('sort_order');
     const select = document.getElementById('category');
-    select.innerHTML = (data ?? []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    select.innerHTML = data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   }
 
   async function addTransaction() {
@@ -99,8 +104,19 @@
       ).join('');
   }
 
+  async function checkSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const statusEl = document.getElementById('authStatus');
+    if (session) {
+      statusEl.textContent = 'Signed in as ' + session.user.email;
+      statusEl.style.color = '#2E7D32';
+      statusEl.style.fontWeight = '600';
+    }
+  }
+
   loadCategories();
   loadTransactions();
+  checkSession();
 </script>
 
 </body>
