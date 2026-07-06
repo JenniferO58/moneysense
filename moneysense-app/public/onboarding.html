@@ -57,7 +57,7 @@
   }
 
   #step-1 .center-content {
-    animation: splashFadeIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    animation: splashFadeIn 1s cubic-bezier(0.16,1,0.3,1) both;
   }
   @keyframes splashFadeIn {
     from { opacity: 0; transform: scale(0.96); }
@@ -404,7 +404,7 @@
       await supabaseClient.from('users').upsert({ id: session.user.id, money_relationship: value });
     }
 
-    setTimeout(() => goTo(5), 4500);
+    setTimeout(() => goTo(5), 300);
   }
 
   async function selectBaseline(value, el) {
@@ -417,7 +417,7 @@
       await supabaseClient.from('users').upsert({ id: session.user.id, weekly_comfortable_range: value });
     }
 
-    setTimeout(() => goTo(6), 4500);
+    setTimeout(() => goTo(6), 300);
   }
 
   function renderEntries() {
