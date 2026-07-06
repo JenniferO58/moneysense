@@ -20,14 +20,24 @@
 <button onclick="signIn()">Send magic link</button>
 <div id="authStatus"></div>
 
+<p style="font-size:13px; color:#888;">— or, if you've set a password —</p>
+<input id="password" type="password" placeholder="Password" />
+<button onclick="signInWithPassword()" style="background:#48484A;">Sign in with password</button>
+
 <h2>Step 2: Add a transaction</h2>
 <input id="amount" type="number" placeholder="Amount" step="0.01" />
 <select id="category"></select>
+<div id="catError" style="color:#C0392B; font-size:13px;"></div>
 <input id="note" type="text" placeholder="Note (optional)" />
 <button onclick="addTransaction()">Add transaction</button>
 <div id="status"></div>
 
 <div id="transactionList"></div>
+
+<h2>Step 3: Generate AI summary</h2>
+<button onclick="generateSummary()" style="background:#2E7D32;">Generate my summary</button>
+<div id="summaryLoading" style="color:#888; font-size:13px; display:none;">Looking at your spending…</div>
+<div id="summaryResult" style="margin-top:16px;"></div>
 
 <script>
   const supabaseClient = window.supabase.createClient(
@@ -35,7 +45,22 @@
     'sb_publishable_gp0oWf_Ao0N9UxOwtKxi9g_-U23nCyL'
   );
 
-async function signIn() {
+  async function signInWithPassword() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const statusEl = document.getElementById('authStatus');
+    if (error) {
+      statusEl.textContent = 'Error: ' + error.message;
+      statusEl.style.color = '#C0392B';
+    } else {
+      statusEl.textContent = 'Signed in with password';
+      statusEl.style.color = '#2E7D32';
+      statusEl.style.fontWeight = '600';
+    }
+  }
+
+  async function signIn() {
     const email = document.getElementById('email').value;
     const btn = event.target;
     btn.textContent = 'Sending...';
@@ -55,8 +80,17 @@ async function signIn() {
       btn.textContent = 'Link sent ✓';
     }
   }
+
   async function loadCategories() {
-    const { data } = await supabaseClient.from('categories').select('*').order('sort_order');
+    const { data, error } = await supabaseClient.from('categories').select('*').order('sort_order');
+    if (error) {
+      document.getElementById('catError').textContent = 'Category load error: ' + error.message;
+      return;
+    }
+    if (!data || data.length === 0) {
+      document.getElementById('catError').textContent = 'No categories returned — check RLS policy on categories table.';
+      return;
+    }
     const select = document.getElementById('category');
     select.innerHTML = data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   }
@@ -113,6 +147,50 @@ async function signIn() {
       statusEl.textContent = 'Signed in as ' + session.user.email;
       statusEl.style.color = '#2E7D32';
       statusEl.style.fontWeight = '600';
+    }
+  }
+
+  async function generateSummary() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      document.getElementById('summaryResult').textContent = 'Please sign in first.';
+      return;
+    }
+
+    document.getElementById('summaryLoading').style.display = 'block';
+    document.getElementById('summaryResult').innerHTML = '';
+
+    try {
+      const res = await fetch('/api/summary/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById('summaryResult').innerHTML =
+          '<span style="color:#C0392B;">Error: ' + JSON.stringify(data) + '</span>';
+        return;
+      }
+
+      document.getElementById('summaryResult').innerHTML = `
+        <div style="background:#F0F0EE; border-radius:10px; padding:16px;">
+          <p style="font-weight:600; font-size:16px; margin:0 0 12px;">${data.summary}</p>
+          <p style="font-size:13px; color:#666; margin:0 0 4px;">INSIGHT</p>
+          <p style="margin:0 0 12px;">${data.insight}</p>
+          <p style="font-size:13px; color:#666; margin:0 0 4px;">NEXT STEP</p>
+          <p style="margin:0;">${data.next_step}</p>
+        </div>
+      `;
+    } catch (err) {
+      document.getElementById('summaryResult').innerHTML =
+        '<span style="color:#C0392B;">Error: ' + err.message + '</span>';
+    } finally {
+      document.getElementById('summaryLoading').style.display = 'none';
     }
   }
 
