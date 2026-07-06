@@ -35,11 +35,14 @@
     'sb_publishable_gp0oWf_Ao0N9UxOwtKxi9g_-U23nCyL'
   );
 
-  async function signIn() {
+async function signIn() {
     const email = document.getElementById('email').value;
     const btn = event.target;
     btn.textContent = 'Sending...';
-    const { error } = await supabaseClient.auth.signInWithOtp({ email });
+    const { error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href }
+    });
     const statusEl = document.getElementById('authStatus');
     if (error) {
       statusEl.textContent = 'Error: ' + error.message;
@@ -52,7 +55,6 @@
       btn.textContent = 'Link sent ✓';
     }
   }
-
   async function loadCategories() {
     const { data } = await supabaseClient.from('categories').select('*').order('sort_order');
     const select = document.getElementById('category');
