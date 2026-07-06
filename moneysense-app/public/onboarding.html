@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoneySense AI — Onboarding</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0A0A0C;
+    --surface: #18181B;
+    --surface-hover: #212124;
+    --surface-border: rgba(255,255,255,0.07);
+    --ink: #F5F5F4;
+    --ink-secondary: #98989F;
+    --ink-muted: #67676D;
+    --accent: #E8794F;
+    --accent-deep: #C8502F;
+  }
+
+  html {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  .glow {
+    position: fixed;
+    top: -100px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(232,121,79,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .step {
+    display: none;
+    min-height: 100vh;
+    padding: 24px 20px;
+    flex-direction: column;
+    position: relative;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+  }
+  .step.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .step.leaving {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  .progress { display: flex; gap: 5px; margin-bottom: 36px; }
+  .progress-dot { width: 20px; height: 3px; border-radius: 2px; background: var(--surface-border); }
+  .progress-dot.done { background: var(--accent); }
+
+  .logo-mark {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: var(--accent);
+    color: #17100A;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 800;
+    margin-bottom: 20px;
+  }
+
+  .back-btn {
+    background: none; border: none; color: var(--ink-muted);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    align-self: flex-start; margin-bottom: 8px; padding: 6px 0;
+  }
+
+  h1 { font-size: 26px; font-weight: 650; line-height: 1.3; letter-spacing: -0.3px; margin-bottom: 12px; }
+  .subtitle { font-size: 15px; color: var(--ink-secondary); line-height: 1.5; }
+
+  .spacer { flex: 1; }
+
+  input {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    border: 1px solid var(--surface-border);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  input::placeholder { color: var(--ink-muted); }
+  input:focus { outline: none; border-color: var(--accent); }
+
+  button.primary {
+    width: 100%;
+    padding: 17px;
+    background: var(--accent);
+    color: #17100A;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 650;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(232,121,79,0.16);
+    margin-top: 8px;
+  }
+  button.primary:active { transform: scale(0.98); }
+  button.ghost {
+    width: 100%; padding: 14px; background: none; color: var(--ink-muted);
+    border: none; font-size: 14px; cursor: pointer; margin-top: 10px;
+  }
+
+  .option-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .option {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 18px;
+    font-size: 15.5px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .option:active, .option.selected { border-color: var(--accent); background: var(--surface-hover); }
+
+  .entries-list { margin-top: 16px; margin-bottom: 12px; }
+  .entry-row {
+    display: flex; justify-content: space-between; padding: 12px 4px;
+    border-bottom: 1px solid var(--surface-border); font-size: 15px;
+  }
+  .entry-note { color: var(--ink-muted); font-size: 13px; margin-left: 6px; }
+
+  .amount-wrap { position: relative; margin-bottom: 12px; }
+  .amount-wrap .currency-prefix {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    color: var(--ink-muted); font-size: 16px; pointer-events: none;
+  }
+  .amount-wrap input { padding-left: 30px; margin-bottom: 0; }
+
+  .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .category-chip {
+    padding: 12px 6px; border: 1px solid var(--surface-border); border-radius: 10px;
+    text-align: center; font-size: 12.5px; cursor: pointer; background: var(--surface); color: var(--ink);
+  }
+  .category-chip.selected { background: var(--accent); color: #17100A; border-color: var(--accent); font-weight: 600; }
+
+  .center-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .loading-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    display: inline-block; animation: pulse 1.2s infinite ease-in-out;
+  }
+  @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  .reveal-card {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 22px;
+    padding: 24px 20px;
+    margin-top: 8px;
+  }
+  .reveal-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent); font-weight: 700; margin-bottom: 12px;
+  }
+  .reveal-number { font-size: 40px; font-weight: 780; letter-spacing: -1.5px; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
+  .reveal-text { font-size: 16px; line-height: 1.5; color: var(--ink-secondary); }
+  .reveal-text strong { color: var(--ink); font-weight: 600; }
+
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<!-- STEP 1: Splash -->
+<div class="step active" id="step-1">
+  <div class="center-content">
+    <div class="logo-mark">M</div>
+    <h1 style="text-align:center; font-size:22px;">MoneySense</h1>
+  </div>
+</div>
+
+<!-- STEP 2: Welcome -->
+<div class="step" id="step-2">
+  <div class="center-content">
+    <h1 style="text-align:center;">Understand your money.<br>Know what to do next.</h1>
+    <p class="subtitle" style="text-align:center; max-width:280px;">A calmer way to manage your finances — clear answers, not spreadsheets.</p>
+  </div>
+  <button class="primary" onclick="goTo(3)">Continue</button>
+</div>
+
+<!-- STEP 3: Sign in -->
+<div class="step" id="step-3">
+  <button class="back-btn" onclick="goTo(2)">← Back</button>
+  <div class="progress"><div class="progress-dot done"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div></div>
+
+  <div id="step-3-form">
+    <h1>Let's get started</h1>
+    <p class="subtitle" style="margin-bottom:24px;">Your email creates your account and keeps your data synced. From your next visit, you'll unlock with Face ID instead.</p>
+    <input id="emailInput" type="email" placeholder="Email address" />
+    <div class="subtitle" id="emailError" style="color:#E8794F; display:none; margin-bottom:8px;"></div>
+    <button class="primary" onclick="tryContinueFromEmail()">Continue</button>
+  </div>
+
+  <div id="step-3-waiting" style="display:none;">
+    <div class="logo-mark"></div>
+    <h1>Check your email</h1>
+    <p class="subtitle">Tap the link we sent you, and this page will pick up right where you left off.</p>
+  </div>
+</div>
+
+<!-- STEP 4: Money relationship — best to worst -->
+<div class="step" id="step-4">
+  <button class="back-btn" onclick="goTo(3)">← Back</button>
+  <div class="progress"><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div></div>
+  <h1>How would you describe your relationship with money right now?</h1>
+  <div class="option-list">
+    <div class="option" onclick="selectRelationship('confident', this)">I feel confident and in control</div>
+    <div class="option" onclick="selectRelationship('inconsistent', this)">I manage okay, but lose consistency</div>
+    <div class="option" onclick="selectRelationship('confused', this)">I'm not always sure where it goes</div>
+    <div class="option" onclick="selectRelationship('stressed', this)">It's a source of stress for me</div>
+  </div>
+  <p class="subtitle" style="margin-top:20px;">This helps us tailor your first insights. You can change this anytime.</p>
+</div>
+
+<!-- STEP 5: Baseline — stored for future weekly comparisons, not used immediately -->
+<div class="step" id="step-5">
+  <button class="back-btn" onclick="goTo(4)">← Back</button>
+  <div class="progress"><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot"></div><div class="progress-dot"></div></div>
+  <h1>Roughly, what feels like a comfortable amount to spend in a typical week?</h1>
+  <div class="option-list">
+    <div class="option" onclick="selectBaseline('under100', this)">Under £100</div>
+    <div class="option" onclick="selectBaseline('100to250', this)">£100 – £250</div>
+    <div class="option" onclick="selectBaseline('250to500', this)">£250 – £500</div>
+    <div class="option" onclick="selectBaseline('500plus', this)">£500+</div>
+  </div>
+  <p class="subtitle" style="margin-top:20px;">We'll use this to compare against your real weekly spending once we have a few weeks of data — not right away.</p>
+</div>
+
+<!-- STEP 6: Add spending — timeframe now made explicit, no longer implied as "this week" -->
+<div class="step" id="step-6">
+  <button class="back-btn" onclick="goTo(5)">← Back</button>
+  <div class="progress"><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot"></div></div>
+  <h1>Add a few things you've spent money on recently</h1>
+  <p class="subtitle">These can be from any recent days — they don't need to be from the same week. We just want a few real examples to start with.</p>
+
+  <div class="entries-list" id="entriesList"></div>
+
+  <div class="amount-wrap">
+    <span class="currency-prefix">£</span>
+    <input id="amountInput" type="number" placeholder="Amount" />
+  </div>
+  <div class="category-grid" id="categoryGrid"></div>
+  <input id="noteInput" type="text" placeholder="Note (optional)" />
+  <button class="primary" onclick="addEntry()" style="background:var(--surface); color:var(--ink); border:1px solid var(--surface-border); box-shadow:none;">Add expense</button>
+
+  <div class="spacer"></div>
+  <button class="primary" onclick="prepareReveal()">Continue</button>
+</div>
+
+<!-- STEP 7: Preparing -->
+<div class="step" id="step-7">
+  <div class="center-content">
+    <div style="margin-bottom:16px;"><span class="loading-dot"></span></div>
+    <p style="color:var(--ink-muted);">Looking at your spending</p>
+  </div>
+</div>
+
+<!-- STEP 8: First reveal — honest, no false comparison claims -->
+<div class="step" id="step-8">
+  <div class="logo-mark" style="margin-bottom:22px;">M</div>
+  <h1>Here's what we found</h1>
+
+  <div class="reveal-card">
+    <div class="reveal-label">From your coach</div>
+    <div class="reveal-number" id="revealTotal">£0</div>
+    <div class="reveal-text" id="revealText">—</div>
+  </div>
+
+  <p class="subtitle" style="margin-top:20px;">This is just the beginning. The more you add, the clearer this gets.</p>
+
+  <div class="spacer"></div>
+  <button class="primary" onclick="this.textContent='Home dashboard coming very soon'; this.disabled=true;">Go to my dashboard</button>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://grsrjczmrmtstbsezbxj.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_gp0oWf_Ao0N9UxOwtKxi9g_-U23nCyL';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let relationship = null;
+  let baseline = null;
+  let entries = [];
+  let categories = [];
+  let selectedCategoryId = null;
+
+  function goTo(n) {
+    const current = document.querySelector('.step.active');
+    const next = document.getElementById('step-' + n);
+    if (current === next) return;
+
+    if (current) {
+      current.classList.remove('active');
+      current.classList.add('leaving');
+    }
+
+    next.style.display = 'flex';
+    void next.offsetWidth;
+    next.classList.add('active');
+
+    setTimeout(() => {
+      if (current) {
+        current.classList.remove('leaving');
+        current.style.display = 'none';
+      }
+    }, 450);
+  }
+
+  async function loadCategories() {
+    const { data } = await supabaseClient.from('categories').select('*').order('sort_order');
+    categories = data ?? [];
+    renderCategoryGrid();
+  }
+
+  function renderCategoryGrid() {
+    const grid = document.getElementById('categoryGrid');
+    grid.innerHTML = categories.map(c =>
+      `<div class="category-chip" data-id="${c.id}" onclick="selectCategory('${c.id}')">${c.name}</div>`
+    ).join('');
+  }
+
+  function selectCategory(id) {
+    selectedCategoryId = id;
+    document.querySelectorAll('.category-chip').forEach(el =>
+      el.classList.toggle('selected', el.dataset.id === id)
+    );
+  }
+
+  async function tryContinueFromEmail() {
+    const email = document.getElementById('emailInput').value.trim();
+    const errorEl = document.getElementById('emailError');
+
+    if (!email || !email.includes('@')) {
+      errorEl.textContent = 'Add your email to continue.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const btn = event.target;
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    const { error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href }
+    });
+
+    if (error) {
+      errorEl.textContent = error.message;
+      errorEl.style.display = 'block';
+      btn.textContent = 'Continue';
+      btn.disabled = false;
+      return;
+    }
+
+    errorEl.style.display = 'none';
+    document.getElementById('step-3-form').style.display = 'none';
+    document.getElementById('step-3-waiting').style.display = 'block';
+  }
+
+  async function selectRelationship(value, el) {
+    relationship = value;
+    document.querySelectorAll('#step-4 .option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      await supabaseClient.from('users').upsert({ id: session.user.id, money_relationship: value });
+    }
+
+    setTimeout(() => goTo(5), 300);
+  }
+
+  async function selectBaseline(value, el) {
+    baseline = value;
+    document.querySelectorAll('#step-5 .option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      await supabaseClient.from('users').upsert({ id: session.user.id, weekly_comfortable_range: value });
+    }
+
+    setTimeout(() => goTo(6), 300);
+  }
+
+  function renderEntries() {
+    const list = document.getElementById('entriesList');
+    list.innerHTML = entries.map(e =>
+      `<div class="entry-row"><span>${e.catName}${e.note ? `<span class="entry-note">${e.note}</span>` : ''}</span><span>£${e.amount.toFixed(2)}</span></div>`
+    ).join('');
+  }
+
+  async function addEntry() {
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    const note = document.getElementById('noteInput').value;
+    if (!amount || !selectedCategoryId) return;
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const res = await fetch('/api/transactions/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ amount, category_id: selectedCategoryId, note })
+    });
+
+    if (res.ok) {
+      const catName = categories.find(c => c.id === selectedCategoryId)?.name ?? 'Other';
+      entries.push({ amount, catName, note });
+      renderEntries();
+      document.getElementById('amountInput').value = '';
+      document.getElementById('noteInput').value = '';
+    }
+  }
+
+  async function prepareReveal() {
+    goTo(7);
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { goTo(8); return; }
+
+    const { data: transactions } = await supabaseClient
+      .from('transactions')
+      .select('amount')
+      .eq('user_id', session.user.id);
+    const total = (transactions ?? []).reduce((s, t) => s + Number(t.amount), 0);
+    document.getElementById('revealTotal').textContent = '£' + total.toFixed(2);
+
+    try {
+      const res = await fetch('/api/summary/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+      const data = await res.json();
+      document.getElementById('revealText').textContent = res.ok
+        ? data.summary
+        : "We'll have your first insight ready shortly.";
+    } catch (err) {
+      document.getElementById('revealText').textContent = "We'll have your first insight ready shortly.";
+    }
+
+    goTo(8);
+  }
+
+  async function init() {
+    await loadCategories();
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+      setTimeout(() => goTo(2), 1100);
+      return;
+    }
+
+    const { data: profile } = await supabaseClient
+      .from('users')
+      .select('money_relationship, weekly_comfortable_range')
+      .eq('id', session.user.id)
+      .maybeSingle();
+
+    if (!profile?.money_relationship) {
+      goTo(4);
+    } else if (!profile?.weekly_comfortable_range) {
+      goTo(5);
+    } else {
+      goTo(6);
+    }
+  }
+
+  init();
+</script>
+
+</body>
+</html>
