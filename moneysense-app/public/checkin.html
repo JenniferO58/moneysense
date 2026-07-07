@@ -68,22 +68,20 @@
   }
   .progress-dot.done { background: var(--accent); }
 
-  .coach-mark {
+  .logo-mark {
     width: 34px; height: 34px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    background: var(--accent);
+    color: #17100A;
     display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800;
     margin-bottom: 22px;
   }
-  .coach-mark .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--accent);
-    animation: breathe 2.4s ease-in-out infinite;
-  }
-  @keyframes breathe {
-    0%, 100% { opacity: 0.5; transform: scale(0.85); }
-    50% { opacity: 1; transform: scale(1.15); }
+
+  .back-btn {
+    background: none; border: none; color: var(--ink-muted);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    align-self: flex-start; margin-bottom: 8px; padding: 6px 0;
   }
 
   h1 {
@@ -111,7 +109,7 @@
     font-size: 16px;
     font-weight: 650;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(232,121,79,0.25);
+    box-shadow: 0 4px 10px rgba(232,121,79,0.16);
   }
   button.primary:active { transform: scale(0.98); }
 
@@ -203,7 +201,7 @@
 
 <!-- Already checked in this week -->
 <div class="step" id="step-already">
-  <div class="coach-mark"><div class="dot"></div></div>
+  <div class="logo-mark">M</div>
   <h1>You've already checked in this week</h1>
   <p class="subtitle">Come back next week for your next reflection.</p>
   <div class="spacer"></div>
@@ -212,12 +210,13 @@
 
 <!-- STEP 1: Opening -->
 <div class="step" id="step-1">
+  <button class="back-btn" onclick="window.location.href='/home.html'">← Back</button>
   <div class="progress">
     <div class="progress-dot" id="dot-1"></div>
     <div class="progress-dot" id="dot-2"></div>
     <div class="progress-dot" id="dot-3"></div>
   </div>
-  <div class="coach-mark"><div class="dot"></div></div>
+  <div class="logo-mark">M</div>
   <h1>A moment to reflect</h1>
   <p class="subtitle">Let's take a quick look back at your week.</p>
   <div class="spacer"></div>
@@ -226,6 +225,7 @@
 
 <!-- STEP 2: Feeling -->
 <div class="step" id="step-2">
+  <button class="back-btn" onclick="goTo(1)">← Back</button>
   <div class="progress">
     <div class="progress-dot done"></div>
     <div class="progress-dot" id="dot-2b"></div>
@@ -241,6 +241,7 @@
 
 <!-- STEP 3: Control -->
 <div class="step" id="step-3">
+  <button class="back-btn" onclick="goTo(2)">← Back</button>
   <div class="progress">
     <div class="progress-dot done"></div>
     <div class="progress-dot done"></div>
@@ -261,7 +262,7 @@
     <div class="progress-dot done"></div>
     <div class="progress-dot done"></div>
   </div>
-  <div class="coach-mark"><div class="dot"></div></div>
+  <div class="logo-mark">M</div>
   <h1 id="closing-title">Thank you for checking in</h1>
 
   <div class="closing-card">
