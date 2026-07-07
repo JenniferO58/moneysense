@@ -165,16 +165,16 @@
   .reveal-card {
     background: var(--surface);
     border: 1px solid var(--surface-border);
-    border-radius: 22px;
-    padding: 24px 20px;
+    border-radius: 20px;
+    padding: 18px 16px;
     margin-top: 8px;
   }
   .reveal-label {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--accent); font-weight: 700; margin-bottom: 12px;
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent); font-weight: 700; margin-bottom: 8px;
   }
-  .reveal-number { font-size: 40px; font-weight: 780; letter-spacing: -1.5px; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
-  .reveal-text { font-size: 16px; line-height: 1.5; color: var(--ink-secondary); }
+  .reveal-number { font-size: 30px; font-weight: 780; letter-spacing: -1px; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+  .reveal-text { font-size: 14px; line-height: 1.4; color: var(--ink-secondary); }
   .reveal-text strong { color: var(--ink); font-weight: 600; }
 
 </style>
@@ -254,7 +254,7 @@
   <button class="back-btn" onclick="goTo(5)">← Back</button>
   <div class="progress"><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot done"></div><div class="progress-dot"></div></div>
   <h1>Add a few things you've spent money on recently</h1>
-  <p class="subtitle">These can be from any recent days — they don't need to be from the same week. We just want a few real examples to start with.</p>
+  <p class="subtitle">These will be logged as today, so add whatever you've spent so far this week — doesn't need to be exact.</p>
 
   <div class="entries-list" id="entriesList"></div>
 
@@ -280,23 +280,23 @@
 
 <!-- STEP 8: First reveal — honest, no false comparison claims -->
 <div class="step" id="step-8">
-  <div class="logo-mark" style="margin-bottom:22px;">M</div>
-  <h1>Here's what we found</h1>
+  <div class="logo-mark" style="margin-bottom:14px;">M</div>
+  <h1 style="font-size:20px; margin-bottom:8px;">Here's what we found</h1>
 
   <div class="reveal-card">
     <div class="reveal-label">From your coach</div>
     <div class="reveal-number" id="revealTotal">£0</div>
-    <div class="reveal-text" id="revealText" style="margin-bottom:16px;">—</div>
-    <div class="reveal-label" style="margin-top:16px;">Worth noticing</div>
-    <div class="reveal-text" id="revealInsight" style="margin-bottom:16px;">—</div>
-    <div class="reveal-label" style="margin-top:16px;">Your next step</div>
+    <div class="reveal-text" id="revealText" style="margin-bottom:12px;">—</div>
+    <div class="reveal-label" style="margin-top:12px;">Worth noticing</div>
+    <div class="reveal-text" id="revealInsight" style="margin-bottom:12px;">—</div>
+    <div class="reveal-label" style="margin-top:12px;">Your next step</div>
     <div class="reveal-text" id="revealNextStep">—</div>
   </div>
 
-  <p class="subtitle" style="margin-top:20px;">This is just the beginning. The more you add, the clearer this gets.</p>
+  <p class="subtitle" style="margin-top:12px; font-size:13px;">This is just the beginning. The more you add, the clearer this gets.</p>
 
   <div class="spacer"></div>
-  <button class="primary" onclick="this.textContent='Home dashboard coming very soon'; this.disabled=true;">Go to my dashboard</button>
+  <button class="primary" onclick="window.location.href='/home.html'">Go to my dashboard</button>
 </div>
 
 <script>
