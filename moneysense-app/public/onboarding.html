@@ -207,7 +207,7 @@
 
   <div id="step-3-form">
     <h1>Let's get started</h1>
-    <p class="subtitle" style="margin-bottom:24px;">Your email creates your account and keeps your data synced. From your next visit, you'll be able to unlock with Face ID or a PIN instead.</p>
+    <p class="subtitle" style="margin-bottom:24px;">Your email creates your account and keeps your data synced across visits.</p>
     <input id="nameInput" type="text" placeholder="First name" />
     <input id="emailInput" type="email" placeholder="Email address" />
     <div class="subtitle" id="emailError" style="color:#E8794F; display:none; margin-bottom:8px;"></div>
@@ -279,24 +279,20 @@
 </div>
 
 <!-- STEP 8: First reveal — honest, no false comparison claims -->
-<div class="step" id="step-8">
-  <div class="logo-mark" style="margin-bottom:14px;">M</div>
-  <h1 style="font-size:20px; margin-bottom:8px;">Here's what we found</h1>
+<div class="step" id="step-8" style="padding-top:16px;">
+  <div class="logo-mark" style="width:28px; height:28px; font-size:12px; margin-bottom:10px;">M</div>
+  <h1 style="font-size:18px; margin-bottom:6px;">Here's what we found</h1>
 
-  <div class="reveal-card">
-    <div class="reveal-label">From your coach</div>
-    <div class="reveal-number" id="revealTotal">£0</div>
-    <div class="reveal-text" id="revealText" style="margin-bottom:12px;">—</div>
-    <div class="reveal-label" style="margin-top:12px;">Worth noticing</div>
-    <div class="reveal-text" id="revealInsight" style="margin-bottom:12px;">—</div>
-    <div class="reveal-label" style="margin-top:12px;">Your next step</div>
-    <div class="reveal-text" id="revealNextStep">—</div>
+  <div class="reveal-card" style="padding:14px 14px;">
+    <div class="reveal-label" style="margin-bottom:6px;">From your coach</div>
+    <div class="reveal-number" id="revealTotal" style="font-size:26px; margin-bottom:4px;">£0</div>
+    <div class="reveal-text" id="revealInsight" style="font-size:13.5px;">—</div>
   </div>
 
-  <p class="subtitle" style="margin-top:12px; font-size:13px;">This is just the beginning. The more you add, the clearer this gets.</p>
+  <p class="subtitle" style="margin-top:10px; font-size:12px; line-height:1.4;">This is just the beginning. The more you add, the clearer this gets.</p>
 
   <div class="spacer"></div>
-  <button class="primary" onclick="window.location.href='/home.html'">Go to my dashboard</button>
+  <button class="primary" style="padding:14px;" onclick="window.location.href='/home.html'">Go to my dashboard</button>
 </div>
 
 <script>
@@ -490,14 +486,12 @@
       });
       const data = await res.json();
       if (res.ok) {
-        document.getElementById('revealText').textContent = data.summary;
         document.getElementById('revealInsight').textContent = data.insight;
-        document.getElementById('revealNextStep').textContent = data.next_step;
       } else {
-        document.getElementById('revealText').textContent = "We'll have your first insight ready shortly.";
+        document.getElementById('revealInsight').textContent = "We'll have your first insight ready shortly.";
       }
     } catch (err) {
-      document.getElementById('revealText').textContent = "We'll have your first insight ready shortly.";
+      document.getElementById('revealInsight').textContent = "We'll have your first insight ready shortly.";
     }
 
     goTo(8);
