@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoneySense AI — Check-in</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0A0A0C;
+    --surface: #18181B;
+    --surface-hover: #212124;
+    --surface-border: rgba(255,255,255,0.07);
+    --ink: #F5F5F4;
+    --ink-secondary: #98989F;
+    --ink-muted: #67676D;
+    --accent: #E8794F;
+    --accent-deep: #C8502F;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .glow {
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(232,121,79,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .step {
+    display: none;
+    min-height: 100vh;
+    padding: 24px 20px;
+    flex-direction: column;
+    position: relative;
+  }
+  .step.active {
+    display: flex;
+    animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Progress dots */
+  .progress {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 40px;
+  }
+  .progress-dot {
+    width: 20px; height: 3px; border-radius: 2px;
+    background: var(--surface-border);
+  }
+  .progress-dot.done { background: var(--accent); }
+
+  .coach-mark {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 22px;
+  }
+  .coach-mark .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    animation: breathe 2.4s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.5; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 650;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
+    margin-bottom: 12px;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--ink-secondary);
+    line-height: 1.5;
+  }
+
+  .spacer { flex: 1; }
+
+  button.primary {
+    width: 100%;
+    padding: 17px;
+    background: var(--accent);
+    color: #17100A;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 650;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(232,121,79,0.25);
+  }
+  button.primary:active { transform: scale(0.98); }
+
+  .option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .option {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 18px;
+    font-size: 15.5px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .option:active, .option.selected {
+    border-color: var(--accent);
+    background: var(--surface-hover);
+  }
+
+  .binary-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .binary-option {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 20px 12px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .binary-option:active, .binary-option.selected {
+    border-color: var(--accent);
+    background: var(--surface-hover);
+  }
+
+  .reassure-note {
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+  }
+
+  /* Closing screen */
+  .closing-card {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 22px;
+    padding: 26px 22px;
+    margin-top: 8px;
+  }
+  .closing-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .closing-text {
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 440;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<!-- Loading (session/check-in status check) -->
+<div class="step active" id="step-loading">
+  <div class="spacer"></div>
+  <div style="text-align:center; color:var(--ink-muted); font-size:14px;">Loading…</div>
+  <div class="spacer"></div>
+</div>
+
+<!-- Already checked in this week -->
+<div class="step" id="step-already">
+  <div class="coach-mark"><div class="dot"></div></div>
+  <h1>You've already checked in this week</h1>
+  <p class="subtitle">Come back next week for your next reflection.</p>
+  <div class="spacer"></div>
+  <button class="primary" onclick="window.location.href='/home.html'">Back to home</button>
+</div>
+
+<!-- STEP 1: Opening -->
+<div class="step" id="step-1">
+  <div class="progress">
+    <div class="progress-dot" id="dot-1"></div>
+    <div class="progress-dot" id="dot-2"></div>
+    <div class="progress-dot" id="dot-3"></div>
+  </div>
+  <div class="coach-mark"><div class="dot"></div></div>
+  <h1>A moment to reflect</h1>
+  <p class="subtitle">Let's take a quick look back at your week.</p>
+  <div class="spacer"></div>
+  <button class="primary" onclick="goTo(2)">Begin</button>
+</div>
+
+<!-- STEP 2: Feeling -->
+<div class="step" id="step-2">
+  <div class="progress">
+    <div class="progress-dot done"></div>
+    <div class="progress-dot" id="dot-2b"></div>
+    <div class="progress-dot"></div>
+  </div>
+  <h1>How did spending feel this week?</h1>
+  <div class="option-list">
+    <div class="option" onclick="selectFeeling('calm', this)">Calm — I felt in control</div>
+    <div class="option" onclick="selectFeeling('mixed', this)">Mixed — some ups and downs</div>
+    <div class="option" onclick="selectFeeling('difficult', this)">Difficult — I felt stressed about money</div>
+  </div>
+</div>
+
+<!-- STEP 3: Control -->
+<div class="step" id="step-3">
+  <div class="progress">
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot"></div>
+  </div>
+  <h1>Did you feel in control of your decisions?</h1>
+  <div class="binary-row">
+    <div class="binary-option" onclick="selectControl(true, this)">Yes</div>
+    <div class="binary-option" onclick="selectControl(false, this)">Not really</div>
+  </div>
+  <div class="reassure-note">There's no wrong answer here — this just helps us support you better.</div>
+</div>
+
+<!-- STEP 4: Closing (adaptive) -->
+<div class="step" id="step-4">
+  <div class="progress">
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+  </div>
+  <div class="coach-mark"><div class="dot"></div></div>
+  <h1 id="closing-title">Thank you for checking in</h1>
+
+  <div class="closing-card">
+    <div class="closing-label">From your coach</div>
+    <div class="closing-text" id="closing-text">—</div>
+  </div>
+
+  <div class="spacer"></div>
+  <button class="primary" onclick="window.location.href='/home.html'">Done</button>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://grsrjczmrmtstbsezbxj.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_gp0oWf_Ao0N9UxOwtKxi9g_-U23nCyL';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let feeling = null;
+  let control = null;
+  let currentWeekStart = null;
+
+  function goTo(stepId) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const el = typeof stepId === 'number'
+      ? document.getElementById('step-' + stepId)
+      : document.getElementById(stepId);
+    el.classList.add('active');
+  }
+
+  function getWeekStart() {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const mondayOffset = (dayOfWeek + 6) % 7;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - mondayOffset);
+    weekStart.setHours(0, 0, 0, 0);
+    return weekStart.toISOString().split('T')[0];
+  }
+
+  function selectFeeling(value, el) {
+    feeling = value;
+    document.querySelectorAll('#step-2 .option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    setTimeout(() => goTo(3), 300);
+  }
+
+  function selectControl(value, el) {
+    control = value;
+    document.querySelectorAll('#step-3 .binary-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    setTimeout(async () => {
+      await saveCheckin();
+      renderClosing();
+      goTo(4);
+    }, 300);
+  }
+
+  async function saveCheckin() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    await supabaseClient.from('weekly_checkins').upsert({
+      user_id: session.user.id,
+      week_start: currentWeekStart,
+      feeling: feeling,
+      stayed_in_control: control
+    }, { onConflict: 'user_id,week_start' });
+  }
+
+  function renderClosing() {
+    const titleEl = document.getElementById('closing-title');
+    const textEl = document.getElementById('closing-text');
+
+    if (feeling === 'difficult' || control === false) {
+      textEl.textContent = "Weeks like this happen to everyone. What matters is that you're paying attention — that's already the hardest part. We'll adjust things to feel a little more manageable next week.";
+    } else if (feeling === 'calm' && control === true) {
+      textEl.textContent = "This week went well — and it shows. Staying consistent like this is exactly what builds confidence over time.";
+    } else {
+      textEl.textContent = "Noticing how your week went is one of the most useful things you can do for your finances — more useful than getting every number right. We'll use this to make next week's guidance feel more like you.";
+    }
+  }
+
+  async function init() {
+    currentWeekStart = getWeekStart();
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+      window.location.href = '/onboarding.html';
+      return;
+    }
+
+    const { data: existing } = await supabaseClient
+      .from('weekly_checkins')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('week_start', currentWeekStart)
+      .maybeSingle();
+
+    if (existing) {
+      goTo('step-already');
+    } else {
+      goTo(1);
+    }
+  }
+
+  init();
+</script>
+
+</body>
+</html>
