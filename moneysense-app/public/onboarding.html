@@ -285,7 +285,11 @@
   <div class="reveal-card">
     <div class="reveal-label">From your coach</div>
     <div class="reveal-number" id="revealTotal">£0</div>
-    <div class="reveal-text" id="revealText">—</div>
+    <div class="reveal-text" id="revealText" style="margin-bottom:16px;">—</div>
+    <div class="reveal-label" style="margin-top:16px;">Worth noticing</div>
+    <div class="reveal-text" id="revealInsight" style="margin-bottom:16px;">—</div>
+    <div class="reveal-label" style="margin-top:16px;">Your next step</div>
+    <div class="reveal-text" id="revealNextStep">—</div>
   </div>
 
   <p class="subtitle" style="margin-top:20px;">This is just the beginning. The more you add, the clearer this gets.</p>
@@ -479,9 +483,13 @@
         }
       });
       const data = await res.json();
-      document.getElementById('revealText').textContent = res.ok
-        ? data.summary
-        : "We'll have your first insight ready shortly.";
+      if (res.ok) {
+        document.getElementById('revealText').textContent = data.summary;
+        document.getElementById('revealInsight').textContent = data.insight;
+        document.getElementById('revealNextStep').textContent = data.next_step;
+      } else {
+        document.getElementById('revealText').textContent = "We'll have your first insight ready shortly.";
+      }
     } catch (err) {
       document.getElementById('revealText').textContent = "We'll have your first insight ready shortly.";
     }
