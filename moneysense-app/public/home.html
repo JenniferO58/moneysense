@@ -268,10 +268,10 @@
     document.getElementById('navDock').style.display = 'flex';
   }
 
-  function setGreeting() {
+  function setGreeting(name) {
     const hour = new Date().getHours();
-    document.getElementById('greetingText').textContent =
-      hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    const timeGreeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greetingText').textContent = name ? `${timeGreeting}, ${name}` : timeGreeting;
   }
 
   async function loadCategories() {
@@ -381,7 +381,17 @@
   }
 
   async function init() {
-    setGreeting();
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      const { data: profile } = await supabaseClient
+        .from('users')
+        .select('full_name')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      setGreeting(profile?.full_name);
+    } else {
+      setGreeting();
+    }
     await loadCategories();
     await loadHomeData();
   }
