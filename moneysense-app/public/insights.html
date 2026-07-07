@@ -49,7 +49,16 @@
   }
   .screen.active { display: flex; }
 
-  .topbar { margin-bottom: 24px; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+  }
+  .profile-dot {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #17100A;
+  }
   h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.3px; }
 
   .section-label {
@@ -158,12 +167,16 @@
 </div>
 
 <div class="screen" id="insightsScreen">
-  <div class="topbar"><h1>Insights</h1></div>
+  <div class="topbar">
+    <h1>Insights</h1>
+    <div class="profile-dot" id="profileDot"></div>
+  </div>
 
   <div class="section-label">This month by category</div>
   <div id="categoryBreakdown"></div>
 
   <div class="section-label">Recent weeks</div>
+  <div id="trendChart" style="margin-bottom:16px;"></div>
   <div id="weeklyHistory"></div>
 </div>
 
@@ -354,12 +367,66 @@
           </div>`).join('')
       : '<div class="empty-state">No weekly history yet.</div>';
 
+    renderTrendChart(sortedWeeks);
+
     showInsights();
+  }
+
+  function renderTrendChart(sortedWeeks) {
+    const el = document.getElementById('trendChart');
+    if (sortedWeeks.length < 2) {
+      el.innerHTML = '';
+      return;
+    }
+
+    // Oldest to newest, left to right — matches how a trend should read
+    const points = [...sortedWeeks].reverse();
+    const values = points.map(p => p[1]);
+    const max = Math.max(...values, 1);
+    const min = Math.min(...values, 0);
+    const range = max - min || 1;
+
+    const width = 340;
+    const height = 90;
+    const padding = 12;
+    const usableHeight = height - padding * 2;
+    const stepX = (width - padding * 2) / (points.length - 1);
+
+    const coords = values.map((v, i) => {
+      const x = padding + i * stepX;
+      const y = padding + usableHeight - ((v - min) / range) * usableHeight;
+      return [x, y];
+    });
+
+    const pathD = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c[0] + ',' + c[1]).join(' ');
+    const dots = coords.map(([x, y], i) =>
+      `<circle cx="${x}" cy="${y}" r="${i === coords.length - 1 ? 4 : 2.5}" fill="${i === coords.length - 1 ? 'var(--accent)' : 'var(--ink-muted)'}" />`
+    ).join('');
+
+    el.innerHTML = `
+      <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow:visible;">
+        <path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+        ${dots}
+      </svg>
+    `;
+  }
+
+  async function setProfileInitial() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+    const { data: profile } = await supabaseClient
+      .from('users')
+      .select('full_name')
+      .eq('id', session.user.id)
+      .maybeSingle();
+    const initial = profile?.full_name ? profile.full_name.trim().charAt(0).toUpperCase() : '';
+    document.getElementById('profileDot').textContent = initial;
   }
 
   async function init() {
     await loadCategories();
     await loadInsightsData();
+    setProfileInitial();
   }
 
   init();
