@@ -263,12 +263,14 @@
     document.getElementById('loadingScreen').classList.add('active');
     document.getElementById('homeScreen').classList.remove('active');
     document.getElementById('navDock').style.display = 'none';
+    window.scrollTo(0, 0);
   }
 
   function showHome() {
     document.getElementById('loadingScreen').classList.remove('active');
     document.getElementById('homeScreen').classList.add('active');
     document.getElementById('navDock').style.display = 'flex';
+    window.scrollTo(0, 0);
   }
 
   function setGreeting(fullName) {
