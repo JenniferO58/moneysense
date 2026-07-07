@@ -31,6 +31,7 @@
     max-width: 420px;
     margin: 0 auto;
     min-height: 100vh;
+    min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     position: relative;
     overflow-x: hidden;
@@ -48,6 +49,7 @@
   .step {
     display: none;
     min-height: 100vh;
+    min-height: 100dvh;
     padding: 24px 20px;
     flex-direction: column;
     position: relative;
@@ -156,11 +158,14 @@
   .category-chip.selected { background: var(--accent); color: #17100A; border-color: var(--accent); font-weight: 600; }
 
   .center-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-  .loading-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
-    display: inline-block; animation: pulse 1.2s infinite ease-in-out;
+  .loading-ring {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 3px solid var(--surface);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
   }
-  @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   .reveal-card {
     background: var(--surface);
@@ -273,26 +278,26 @@
 <!-- STEP 7: Preparing -->
 <div class="step" id="step-7">
   <div class="center-content">
-    <div style="margin-bottom:16px;"><span class="loading-dot"></span></div>
+    <div style="margin-bottom:16px;"><div class="loading-ring"></div></div>
     <p style="color:var(--ink-muted);">Looking at your spending</p>
   </div>
 </div>
 
 <!-- STEP 8: First reveal — honest, no false comparison claims -->
-<div class="step" id="step-8" style="padding-top:16px;">
-  <div class="logo-mark" style="width:28px; height:28px; font-size:12px; margin-bottom:10px;">M</div>
-  <h1 style="font-size:18px; margin-bottom:6px;">Here's what we found</h1>
+<div class="step" id="step-8">
+  <div class="logo-mark" style="width:44px; height:44px; font-size:18px; margin-bottom:24px;">M</div>
+  <h1 style="font-size:26px; margin-bottom:28px;">Here's what we found</h1>
 
-  <div class="reveal-card" style="padding:14px 14px;">
-    <div class="reveal-label" style="margin-bottom:6px;">From your coach</div>
-    <div class="reveal-number" id="revealTotal" style="font-size:26px; margin-bottom:4px;">£0</div>
-    <div class="reveal-text" id="revealInsight" style="font-size:13.5px;">—</div>
+  <div class="reveal-card" style="padding:28px 24px;">
+    <div class="reveal-label" style="margin-bottom:16px;">From your coach</div>
+    <div class="reveal-number" id="revealTotal" style="font-size:44px; margin-bottom:16px;">£0</div>
+    <div class="reveal-text" id="revealInsight" style="font-size:17px; line-height:1.55;">—</div>
   </div>
 
-  <p class="subtitle" style="margin-top:10px; font-size:12px; line-height:1.4;">This is just the beginning. The more you add, the clearer this gets.</p>
+  <p class="subtitle" style="margin-top:24px; font-size:14px; line-height:1.5;">This is just the beginning. The more you add, the clearer this gets.</p>
 
   <div class="spacer"></div>
-  <button class="primary" style="padding:14px;" onclick="window.location.href='/home.html'">Go to my dashboard</button>
+  <button class="primary" onclick="window.location.href='/home.html'">Go to my dashboard</button>
 </div>
 
 <script>
