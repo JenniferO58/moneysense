@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoneySense AI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0A0A0C;
+    --surface: #18181B;
+    --surface-hover: #212124;
+    --surface-border: rgba(255,255,255,0.07);
+    --ink: #F5F5F4;
+    --ink-secondary: #98989F;
+    --ink-muted: #67676D;
+    --accent: #E8794F;
+    --accent-deep: #C8502F;
+  }
+
+  html { overflow-x: hidden; width: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .glow {
+    position: fixed;
+    top: -120px; right: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(232,121,79,0.14) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .screen {
+    display: none;
+    position: relative;
+    padding: 18px 20px 120px;
+    flex-direction: column;
+  }
+  .screen.active { display: flex; }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .greeting { font-size: 14px; color: var(--ink-muted); font-weight: 500; }
+  .profile-dot {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+  }
+
+  .hero-label {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--ink-muted); font-weight: 700; margin-bottom: 14px;
+  }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    animation: breathe 3s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.5; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  .hero-number-row { display: flex; align-items: baseline; gap: 3px; }
+  .hero-currency { font-size: 22px; font-weight: 500; color: var(--ink-secondary); }
+  .hero-number {
+    font-size: 52px; font-weight: 780; letter-spacing: -2px; line-height: 1;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 30px rgba(232,121,79,0.22);
+  }
+  .hero-comparison {
+    font-size: 14px; color: var(--ink-muted); margin-top: 10px; line-height: 1.5;
+  }
+
+  .coach-card {
+    margin-top: 22px; background: var(--surface); border: 1px solid var(--surface-border);
+    border-radius: 20px; padding: 18px 17px;
+  }
+  .coach-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent); font-weight: 700; margin-bottom: 10px;
+  }
+  .coach-text {
+    font-size: 15.5px; line-height: 1.5; font-weight: 420;
+    color: var(--ink-secondary); letter-spacing: -0.1px;
+  }
+  .coach-text strong { color: var(--ink); font-weight: 600; }
+
+  .next-step {
+    margin-top: 12px; background: var(--accent); border-radius: 20px; padding: 18px 17px 17px;
+  }
+  .next-step-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: rgba(23,15,10,0.55); font-weight: 700; margin-bottom: 8px;
+  }
+  .next-step-text {
+    font-size: 15.5px; line-height: 1.45; color: #17100A;
+    font-weight: 550; letter-spacing: -0.1px;
+  }
+
+  .nav-dock {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+    max-width: 380px; width: calc(100% - 44px);
+    background: rgba(24,24,27,0.85);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px; padding: 8px 10px;
+    display: flex; align-items: center; justify-content: space-around;
+    box-shadow: 0 16px 36px -6px rgba(0,0,0,0.5);
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-muted); }
+  .nav-item.active { color: var(--ink); }
+  .nav-item svg { width: 20px; height: 20px; }
+  .nav-item span { font-size: 10px; font-weight: 600; }
+  .nav-add {
+    width: 42px; height: 42px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px rgba(232,121,79,0.28); flex-shrink: 0; border: none; cursor: pointer;
+  }
+  .nav-add svg { width: 18px; height: 18px; color: #17100A; }
+
+  /* Loading state */
+  .loading-screen {
+    display: none; min-height: 100vh; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+  }
+  .loading-screen.active { display: flex; }
+  .loading-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    animation: pulse 1.2s infinite ease-in-out;
+  }
+  @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+  .loading-text { color: var(--ink-muted); font-size: 14px; }
+
+  /* Add-expense bottom sheet */
+  .sheet-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10;
+  }
+  .sheet-overlay.active { display: block; }
+  .sheet {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    max-width: 420px; width: 100%; background: var(--bg);
+    border: 1px solid var(--surface-border); border-top: 1px solid var(--surface-border);
+    border-radius: 24px 24px 0 0; padding: 24px 20px; z-index: 11;
+    display: none;
+  }
+  .sheet.active { display: block; }
+  .sheet h2 { font-size: 18px; font-weight: 650; margin-bottom: 16px; }
+  .sheet input {
+    width: 100%; padding: 14px; font-size: 15px; border: 1px solid var(--surface-border);
+    border-radius: 12px; margin-bottom: 10px; background: var(--surface); color: var(--ink);
+  }
+  .sheet input::placeholder { color: var(--ink-muted); }
+  .sheet-category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+  .sheet-chip {
+    padding: 10px 4px; border: 1px solid var(--surface-border); border-radius: 10px;
+    text-align: center; font-size: 12px; cursor: pointer; background: var(--surface); color: var(--ink);
+  }
+  .sheet-chip.selected { background: var(--accent); color: #17100A; font-weight: 600; border-color: var(--accent); }
+  .sheet button.primary {
+    width: 100%; padding: 15px; background: var(--accent); color: #17100A;
+    border: none; border-radius: 14px; font-size: 15px; font-weight: 650; cursor: pointer;
+  }
+  .sheet-status { font-size: 13px; color: var(--ink-muted); margin-top: 10px; text-align: center; }
+
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<div class="loading-screen active" id="loadingScreen">
+  <div class="loading-dot"></div>
+  <div class="loading-text">Looking at your spending</div>
+</div>
+
+<div class="screen" id="homeScreen">
+
+  <div class="topbar">
+    <div class="greeting" id="greetingText">Good morning</div>
+    <div class="profile-dot"></div>
+  </div>
+
+  <div class="hero-label">
+    <div class="live-dot"></div>
+    This month
+  </div>
+  <div class="hero-number-row">
+    <span class="hero-currency">£</span>
+    <span class="hero-number" id="heroTotal">0</span>
+  </div>
+  <div class="hero-comparison" id="heroSummary"></div>
+
+  <div class="coach-card">
+    <div class="coach-label">Worth noticing</div>
+    <div class="coach-text" id="coachInsight">—</div>
+  </div>
+
+  <div class="next-step">
+    <div class="next-step-label">Your next step</div>
+    <div class="next-step-text" id="nextStepText">—</div>
+  </div>
+
+</div>
+
+<div class="nav-dock" id="navDock" style="display:none;">
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg>
+    <span>Home</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+    <span>Insights</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <span>Check-in</span>
+  </div>
+  <button class="nav-add" onclick="openSheet()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+<div class="sheet" id="addSheet">
+  <h2>Add an expense</h2>
+  <input id="sheetAmount" type="number" placeholder="Amount" />
+  <div class="sheet-category-grid" id="sheetCategoryGrid"></div>
+  <input id="sheetNote" type="text" placeholder="Note (optional)" />
+  <button class="primary" onclick="submitExpense()">Add</button>
+  <div class="sheet-status" id="sheetStatus"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://grsrjczmrmtstbsezbxj.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_gp0oWf_Ao0N9UxOwtKxi9g_-U23nCyL';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let categories = [];
+  let selectedSheetCategoryId = null;
+
+  function showLoading(text) {
+    document.getElementById('loadingScreen').classList.add('active');
+    document.getElementById('homeScreen').classList.remove('active');
+    document.getElementById('navDock').style.display = 'none';
+    if (text) document.querySelector('.loading-text').textContent = text;
+  }
+
+  function showHome() {
+    document.getElementById('loadingScreen').classList.remove('active');
+    document.getElementById('homeScreen').classList.add('active');
+    document.getElementById('navDock').style.display = 'flex';
+  }
+
+  function setGreeting() {
+    const hour = new Date().getHours();
+    document.getElementById('greetingText').textContent =
+      hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  }
+
+  async function loadCategories() {
+    const { data } = await supabaseClient.from('categories').select('*').order('sort_order');
+    categories = data ?? [];
+    const grid = document.getElementById('sheetCategoryGrid');
+    grid.innerHTML = categories.map(c =>
+      `<div class="sheet-chip" data-id="${c.id}" onclick="selectSheetCategory('${c.id}')">${c.name}</div>`
+    ).join('');
+  }
+
+  function selectSheetCategory(id) {
+    selectedSheetCategoryId = id;
+    document.querySelectorAll('.sheet-chip').forEach(el =>
+      el.classList.toggle('selected', el.dataset.id === id)
+    );
+  }
+
+  function openSheet() {
+    document.getElementById('sheetOverlay').classList.add('active');
+    document.getElementById('addSheet').classList.add('active');
+  }
+  function closeSheet() {
+    document.getElementById('sheetOverlay').classList.remove('active');
+    document.getElementById('addSheet').classList.remove('active');
+    document.getElementById('sheetStatus').textContent = '';
+  }
+
+  async function submitExpense() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const amount = parseFloat(document.getElementById('sheetAmount').value);
+    const note = document.getElementById('sheetNote').value;
+    const statusEl = document.getElementById('sheetStatus');
+
+    if (!amount || !selectedSheetCategoryId) {
+      statusEl.textContent = 'Add an amount and category to continue.';
+      return;
+    }
+
+    const res = await fetch('/api/transactions/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ amount, category_id: selectedSheetCategoryId, note })
+    });
+
+    if (res.ok) {
+      statusEl.textContent = 'Added';
+      document.getElementById('sheetAmount').value = '';
+      document.getElementById('sheetNote').value = '';
+      selectedSheetCategoryId = null;
+      document.querySelectorAll('.sheet-chip').forEach(el => el.classList.remove('selected'));
+
+      setTimeout(async () => {
+        closeSheet();
+        showLoading('Updating your dashboard');
+        await loadHomeData();
+      }, 500);
+    } else {
+      statusEl.textContent = 'Something went wrong — try again.';
+    }
+  }
+
+  async function loadHomeData() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+      // Not signed in — send back to onboarding, this page has nothing to show
+      window.location.href = '/onboarding.html';
+      return;
+    }
+
+    // Real total for the current calendar month
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+
+    const { data: transactions } = await supabaseClient
+      .from('transactions')
+      .select('amount')
+      .eq('user_id', session.user.id)
+      .gte('spent_on', monthStart);
+
+    const total = (transactions ?? []).reduce((s, t) => s + Number(t.amount), 0);
+    document.getElementById('heroTotal').textContent = total.toFixed(0);
+
+    // Real AI response
+    try {
+      const res = await fetch('/api/summary/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById('heroSummary').textContent = data.summary ?? '';
+        document.getElementById('coachInsight').textContent = data.insight ?? '';
+        document.getElementById('nextStepText').textContent = data.next_step ?? '';
+      } else {
+        document.getElementById('coachInsight').textContent = "We'll have your insight ready shortly.";
+      }
+    } catch (err) {
+      document.getElementById('coachInsight').textContent = "We'll have your insight ready shortly.";
+    }
+
+    showHome();
+  }
+
+  async function init() {
+    setGreeting();
+    await loadCategories();
+    await loadHomeData();
+  }
+
+  init();
+</script>
+
+</body>
+</html>
