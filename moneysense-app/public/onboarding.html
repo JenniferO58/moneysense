@@ -208,6 +208,7 @@
   <div id="step-3-form">
     <h1>Let's get started</h1>
     <p class="subtitle" style="margin-bottom:24px;">Your email creates your account and keeps your data synced. From your next visit, you'll be able to unlock with Face ID or a PIN instead.</p>
+    <input id="nameInput" type="text" placeholder="First name" />
     <input id="emailInput" type="email" placeholder="Email address" />
     <div class="subtitle" id="emailError" style="color:#E8794F; display:none; margin-bottom:8px;"></div>
     <button class="primary" onclick="tryContinueFromEmail()">Continue</button>
@@ -366,6 +367,7 @@
 
   async function tryContinueFromEmail() {
     const email = document.getElementById('emailInput').value.trim();
+    const name = document.getElementById('nameInput').value.trim();
     const errorEl = document.getElementById('emailError');
 
     if (!email || !email.includes('@')) {
@@ -373,6 +375,10 @@
       errorEl.style.display = 'block';
       return;
     }
+
+    // Held temporarily — there's no real account yet until the magic
+    // link is actually clicked, so this can't be saved to Supabase yet.
+    if (name) localStorage.setItem('pending_name', name);
 
     const btn = event.target;
     btn.textContent = 'Sending...';
@@ -506,6 +512,14 @@
     if (!session) {
       setTimeout(() => goTo(2), 1500);
       return;
+    }
+
+    // Now that a real account exists, save any name that was captured
+    // before the magic link was clicked.
+    const pendingName = localStorage.getItem('pending_name');
+    if (pendingName) {
+      await supabaseClient.from('users').upsert({ id: session.user.id, full_name: pendingName });
+      localStorage.removeItem('pending_name');
     }
 
     // Returning from the magic link, or already signed in — resume at
