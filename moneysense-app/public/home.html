@@ -268,10 +268,13 @@
     document.getElementById('navDock').style.display = 'flex';
   }
 
-  function setGreeting(name) {
+  function setGreeting(fullName) {
     const hour = new Date().getHours();
     const timeGreeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    document.getElementById('greetingText').textContent = name ? `${timeGreeting}, ${name}` : timeGreeting;
+    // Always greet with just the first name, even if a full name was
+    // stored — don't rely on the input placeholder alone to enforce this.
+    const firstName = fullName ? fullName.trim().split(/\s+/)[0] : null;
+    document.getElementById('greetingText').textContent = firstName ? `${timeGreeting}, ${firstName}` : timeGreeting;
   }
 
   async function loadCategories() {
