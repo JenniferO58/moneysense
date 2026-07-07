@@ -189,7 +189,6 @@
 
 <div class="loading-screen active" id="loadingScreen">
   <div class="loading-dot"></div>
-  <div class="loading-text">Looking at your spending</div>
 </div>
 
 <div class="screen" id="homeScreen">
@@ -257,11 +256,10 @@
   let categories = [];
   let selectedSheetCategoryId = null;
 
-  function showLoading(text) {
+  function showLoading() {
     document.getElementById('loadingScreen').classList.add('active');
     document.getElementById('homeScreen').classList.remove('active');
     document.getElementById('navDock').style.display = 'none';
-    if (text) document.querySelector('.loading-text').textContent = text;
   }
 
   function showHome() {
@@ -338,7 +336,7 @@
 
       setTimeout(async () => {
         closeSheet();
-        showLoading('Updating your dashboard');
+        showLoading();
         await loadHomeData();
       }, 500);
     } else {
