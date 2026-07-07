@@ -235,7 +235,7 @@ export default async function handler(req, res) {
     // rather than a generic summary tool.
     const { data: userProfile } = await supabaseAdmin
       .from('users')
-      .select('money_relationship')
+      .select('money_relationship, weekly_comfortable_range')
       .eq('id', userId)
       .maybeSingle();
 
@@ -293,10 +293,32 @@ export default async function handler(req, res) {
         }).join('\n')
       : null;
 
+    // Compare actual average weekly spending against the comfortable
+    // range they stated in onboarding — this was being captured but
+    // never actually used until now.
+    const bucketBounds = {
+      under100: [0, 100],
+      '100to250': [100, 250],
+      '250to500': [250, 500],
+      '500plus': [500, Infinity]
+    };
+    const weekCount = Math.max(Object.keys(weekBuckets).length, 1);
+    const avgWeekly = total / weekCount;
+
+    let baselineContext = '';
+    if (userProfile?.weekly_comfortable_range) {
+      const bounds = bucketBounds[userProfile.weekly_comfortable_range];
+      baselineContext = `\n- Stated comfortable weekly spending: ${userProfile.weekly_comfortable_range}\n- Actual average weekly spending so far: £${avgWeekly.toFixed(2)}`;
+
+      if (bounds && (avgWeekly > bounds[1] * 1.3 || (bounds[0] > 0 && avgWeekly < bounds[0] * 0.5))) {
+        baselineContext += `\nIMPORTANT: Their actual spending looks meaningfully different from what they said feels comfortable. This is a real, relevant thing to acknowledge gently and factually — without alarm — in the insight or next step, since it's exactly the kind of gap this app exists to surface.`;
+      }
+    }
+
     const userMessage = `USER CONTEXT:
 - Self-described relationship with money: ${userProfile?.money_relationship ?? 'not stated'}
 - Last check-in feeling: ${lastCheckin?.feeling ?? 'no check-in yet'}
-- Last check-in — stayed in control: ${lastCheckin?.stayed_in_control ?? 'unknown'}
+- Last check-in — stayed in control: ${lastCheckin?.stayed_in_control ?? 'unknown'}${baselineContext}
 ${lastCheckin?.feeling === 'difficult' || lastCheckin?.stayed_in_control === false
   ? '\nIMPORTANT: Their last check-in was difficult or they felt out of control. Keep this response especially gentle, lead with acknowledgement before any observation, and keep the next step small and easy — do not introduce more than one new idea.'
   : ''}
