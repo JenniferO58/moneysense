@@ -159,17 +159,31 @@
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) return;
 
+    // Actually filter to the current calendar week (Monday-start) rather
+    // than just showing the last N regardless of date — so the label
+    // matches what's really being shown.
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const mondayOffset = (dayOfWeek + 6) % 7;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - mondayOffset);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekStartStr = weekStart.toISOString().split('T')[0];
+
     const { data } = await supabaseClient
       .from('transactions')
       .select('*, categories(name)')
-      .order('created_at', { ascending: false })
-      .limit(10);
+      .eq('user_id', session.user.id)
+      .gte('spent_on', weekStartStr)
+      .order('spent_on', { ascending: false });
 
     document.getElementById('transactionList').innerHTML =
-      '<h3>Recent transactions</h3>' +
-      (data ?? []).map(t =>
-        `<div class="row"><span>${t.categories?.name ?? 'Other'} ${t.note ? '· ' + t.note : ''}</span><span>£${t.amount}</span></div>`
-      ).join('');
+      '<h3>This week\'s transactions</h3>' +
+      (data && data.length > 0
+        ? data.map(t =>
+            `<div class="row"><span>${t.categories?.name ?? 'Other'} ${t.note ? '· ' + t.note : ''}</span><span>£${t.amount}</span></div>`
+          ).join('')
+        : '<p style="color:#888; font-size:13px;">Nothing added this week yet.</p>');
   }
 
   async function checkSession() {
