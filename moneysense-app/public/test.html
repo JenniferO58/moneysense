@@ -176,7 +176,7 @@
     const { data: { session } } = await supabaseClient.auth.getSession();
     const statusEl = document.getElementById('authStatus');
     if (session) {
-      statusEl.textContent = '✅ Signed in as ' + session.user.email;
+      statusEl.textContent = 'Signed in as ' + session.user.email;
       statusEl.style.color = '#2E7D32';
       statusEl.style.fontWeight = '600';
     }
