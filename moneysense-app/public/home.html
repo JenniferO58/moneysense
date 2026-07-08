@@ -28,6 +28,7 @@
     max-width: 420px;
     margin: 0 auto;
     min-height: 100vh;
+    min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     position: relative;
     overflow-x: hidden;
@@ -44,18 +45,14 @@
   .screen {
     display: none;
     position: relative;
-    padding: 24px 20px 120px;
     flex-direction: column;
   }
   .screen.active { display: flex; }
 
-  .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 36px;
-  }
-  .greeting { font-size: 16px; color: var(--ink-secondary); font-weight: 600; letter-spacing: -0.2px; }
+  .content { padding: 24px 20px 0; flex: 1; display: flex; flex-direction: column; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+  .greeting { font-size: 19px; color: var(--ink); font-weight: 700; letter-spacing: -0.3px; }
   .profile-dot {
     width: 28px; height: 28px; border-radius: 50%;
     background: var(--accent);
@@ -63,73 +60,47 @@
     font-size: 12px; font-weight: 700; color: #17100A;
   }
 
-  .hero-label {
-    display: flex; align-items: center; gap: 7px;
-    font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px;
-    color: var(--ink-muted); font-weight: 700; margin-bottom: 16px;
-  }
-  .live-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent);
-    animation: breathe 3s ease-in-out infinite;
-  }
-  @keyframes breathe {
-    0%, 100% { opacity: 0.5; transform: scale(0.85); }
-    50% { opacity: 1; transform: scale(1.1); }
-  }
-  .hero-number-row { display: flex; align-items: baseline; gap: 3px; }
-  .hero-currency { font-size: 24px; font-weight: 500; color: var(--ink-secondary); }
-  .hero-number {
-    font-size: 60px; font-weight: 780; letter-spacing: -2.5px; line-height: 1;
-    color: var(--ink); font-variant-numeric: tabular-nums;
-    text-shadow: 0 0 30px rgba(232,121,79,0.22);
-  }
-  .hero-comparison {
-    font-size: 15px; color: var(--ink-secondary); margin-top: 14px; line-height: 1.5;
-    max-width: 300px;
-  }
+  .question { font-size: 14px; color: var(--ink-secondary); margin-bottom: 14px; font-style: italic; }
 
-  /* The coach's insight — no card, no border, a direct continuation
-     of the same passage as the hero, not a separate widget */
-  .coach-passage {
-    margin-top: 20px;
-    padding-left: 14px;
-    border-left: 2px solid var(--accent);
-  }
-  .coach-passage-text {
-    font-size: 15px; line-height: 1.55; font-weight: 420;
-    color: var(--ink-secondary); letter-spacing: -0.1px;
-    max-width: 300px;
-  }
-  .coach-passage-text strong { color: var(--ink); font-weight: 600; }
+  .answer { font-size: 19px; line-height: 1.55; font-weight: 460; letter-spacing: -0.2px; }
+  .answer .num { font-weight: 780; color: var(--accent); font-variant-numeric: tabular-nums; }
 
-  /* The one remaining hero element on the screen */
+  .stat-block {
+    margin-top: 32px; background: rgba(255,255,255,0.02); border-radius: 14px;
+    padding: 4px 14px;
+  }
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-key { font-size: 12.5px; color: var(--ink-secondary); }
+  .stat-val { font-size: 12.5px; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
   .next-step {
-    margin-top: 40px; background: var(--accent); border-radius: 20px; padding: 22px 20px 21px;
-    box-shadow: 0 16px 36px -10px rgba(200,80,47,0.35);
+    margin-top: 34px; padding-left: 14px; border-left: 3px solid var(--accent);
   }
   .next-step-label {
     font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-    color: rgba(23,15,10,0.55); font-weight: 700; margin-bottom: 10px;
+    color: var(--accent); font-weight: 700; margin-bottom: 8px;
   }
   .next-step-text {
-    font-size: 15.5px; line-height: 1.5; color: #17100A;
-    font-weight: 550; letter-spacing: -0.1px;
+    font-size: 13.5px; line-height: 1.55; color: var(--ink-secondary);
   }
 
-  /* Ask MoneySense — deliberately near-invisible, a reply prompt,
-     not a search bar. No border, no fill, no pill shape. */
-  .ask-prompt {
-    display: flex; align-items: center; gap: 6px;
-    margin-top: 28px; padding: 4px 2px;
-    cursor: pointer;
-    opacity: 0.65;
+  .ask-input {
+    display: flex; align-items: center; gap: 10px;
+    background: transparent; border: 1px solid var(--surface-border);
+    border-radius: 100px; padding: 13px 14px 13px 18px;
+    margin-top: 28px; cursor: pointer;
   }
-  .ask-prompt:active { opacity: 1; }
-  .ask-prompt span {
-    font-size: 13.5px; color: var(--ink-muted); font-weight: 450;
+  .ask-input span { font-size: 13px; color: var(--ink-secondary); flex: 1; }
+  .ask-send {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1.5px solid var(--accent); background: transparent;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .ask-prompt svg { width: 13px; height: 13px; color: var(--ink-muted); flex-shrink: 0; }
+  .ask-send svg { width: 12px; height: 12px; color: var(--accent); }
 
   .nav-dock {
     position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
@@ -142,20 +113,23 @@
     display: flex; align-items: center; justify-content: space-around;
     box-shadow: 0 16px 36px -6px rgba(0,0,0,0.5);
   }
-  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-muted); }
-  .nav-item.active { color: var(--ink); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-muted); opacity: 0.4; transition: opacity 0.2s; }
+  .nav-item.active { color: var(--ink); opacity: 1; }
   .nav-item svg { width: 20px; height: 20px; }
   .nav-item span { font-size: 10px; font-weight: 600; }
   .nav-add {
     width: 42px; height: 42px; border-radius: 50%; background: var(--accent);
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 10px rgba(232,121,79,0.28); flex-shrink: 0; border: none; cursor: pointer;
+    opacity: 1;
   }
   .nav-add svg { width: 18px; height: 18px; color: #17100A; }
 
+  .bottom-spacer { height: 120px; }
+
   /* Loading state */
   .loading-screen {
-    display: none; min-height: 100vh; flex-direction: column;
+    display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column;
     align-items: center; justify-content: center; gap: 16px;
   }
   .loading-screen.active { display: flex; }
@@ -167,7 +141,6 @@
     animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { color: var(--ink-muted); font-size: 14px; }
 
   /* Add-expense bottom sheet */
   .sheet-overlay {
@@ -211,36 +184,37 @@
 </div>
 
 <div class="screen" id="homeScreen">
+  <div class="content">
 
-  <div class="topbar">
-    <div class="greeting" id="greetingText">Good morning</div>
-    <div class="profile-dot" id="profileDot"></div>
-  </div>
+    <div class="topbar">
+      <div class="greeting" id="greetingText">Good morning</div>
+      <div class="profile-dot" id="profileDot"></div>
+    </div>
 
-  <div class="hero-label">
-    <div class="live-dot"></div>
-    This month
-  </div>
-  <div class="hero-number-row">
-    <span class="hero-currency">£</span>
-    <span class="hero-number" id="heroTotal">0</span>
-  </div>
-  <div class="hero-comparison" id="heroSummary"></div>
+    <div class="question">How's my money looking this month?</div>
 
-  <div class="coach-passage">
-    <div class="coach-passage-text" id="coachInsight">—</div>
-  </div>
+    <div class="answer" id="answerText">—</div>
 
-  <div class="next-step">
-    <div class="next-step-label">Your next step</div>
-    <div class="next-step-text" id="nextStepText">—</div>
-  </div>
+    <div class="stat-block">
+      <div class="stat-row"><span class="stat-key">Top category</span><span class="stat-val" id="statTopCategory">—</span></div>
+      <div class="stat-row"><span class="stat-key">Vs. last month</span><span class="stat-val" id="statVsLastMonth">—</span></div>
+      <div class="stat-row"><span class="stat-key">Comfortable range</span><span class="stat-val" id="statComfortRange">—</span></div>
+    </div>
 
-  <div class="ask-prompt" onclick="window.location.href='/ask.html'">
-    <span>Ask a follow-up…</span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-  </div>
+    <div class="next-step">
+      <div class="next-step-label">What I'd do next</div>
+      <div class="next-step-text" id="nextStepText">—</div>
+    </div>
 
+    <div class="ask-input" onclick="window.location.href='/ask.html'">
+      <span>Ask a follow-up…</span>
+      <div class="ask-send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 14 0M13 6l6 6-6 6"/></svg>
+      </div>
+    </div>
+
+    <div class="bottom-spacer"></div>
+  </div>
 </div>
 
 <div class="nav-dock" id="navDock" style="display:none;">
@@ -279,6 +253,13 @@
   let categories = [];
   let selectedSheetCategoryId = null;
 
+  const RANGE_LABELS = {
+    under100: 'Under £100/wk',
+    '100to250': '£100–250/wk',
+    '250to500': '£250–500/wk',
+    '500plus': '£500+/wk'
+  };
+
   function showLoading() {
     document.getElementById('loadingScreen').classList.add('active');
     document.getElementById('homeScreen').classList.remove('active');
@@ -296,8 +277,6 @@
   function setGreeting(fullName) {
     const hour = new Date().getHours();
     const timeGreeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    // Always greet with just the first name, even if a full name was
-    // stored — don't rely on the input placeholder alone to enforce this.
     const firstName = fullName ? fullName.trim().split(/\s+/)[0] : null;
     document.getElementById('greetingText').textContent = firstName ? `${timeGreeting}, ${firstName}` : timeGreeting;
   }
@@ -373,25 +352,64 @@
     const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (!session) {
-      // Not signed in — send back to onboarding, this page has nothing to show
       window.location.href = '/onboarding.html';
       return;
     }
 
-    // Real total for the current calendar month
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+    const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
 
+    // Current month transactions, with category names for the top-category stat
     const { data: transactions } = await supabaseClient
       .from('transactions')
-      .select('amount')
+      .select('amount, categories(name)')
       .eq('user_id', session.user.id)
       .gte('spent_on', monthStart);
 
     const total = (transactions ?? []).reduce((s, t) => s + Number(t.amount), 0);
-    document.getElementById('heroTotal').textContent = total.toFixed(0);
 
-    // Real AI response
+    // Top category this month
+    const catTotals = {};
+    (transactions ?? []).forEach(t => {
+      const name = t.categories?.name ?? 'Other';
+      catTotals[name] = (catTotals[name] ?? 0) + Number(t.amount);
+    });
+    const topCat = Object.entries(catTotals).sort((a, b) => b[1] - a[1])[0];
+    document.getElementById('statTopCategory').textContent = topCat
+      ? `${topCat[0]} · £${topCat[1].toFixed(0)}`
+      : 'Not enough data';
+
+    // Previous month total, for the comparison stat
+    const { data: prevTransactions } = await supabaseClient
+      .from('transactions')
+      .select('amount')
+      .eq('user_id', session.user.id)
+      .gte('spent_on', prevMonthStart)
+      .lte('spent_on', prevMonthEnd);
+
+    const prevTotal = (prevTransactions ?? []).reduce((s, t) => s + Number(t.amount), 0);
+    let vsLastMonthText = 'No prior data yet';
+    if (prevTotal > 0) {
+      const diff = total - prevTotal;
+      const pctDiff = Math.abs(diff / prevTotal);
+      if (pctDiff < 0.1) vsLastMonthText = 'About the same';
+      else if (diff > 0) vsLastMonthText = 'Higher than last month';
+      else vsLastMonthText = 'Lower than last month';
+    }
+    document.getElementById('statVsLastMonth').textContent = vsLastMonthText;
+
+    // Comfortable range, from onboarding
+    const { data: profile } = await supabaseClient
+      .from('users')
+      .select('weekly_comfortable_range')
+      .eq('id', session.user.id)
+      .maybeSingle();
+    document.getElementById('statComfortRange').textContent =
+      RANGE_LABELS[profile?.weekly_comfortable_range] ?? 'Not set yet';
+
+    // Real AI response — summary embedded into the answer sentence with the number
     try {
       const res = await fetch('/api/summary/generate', {
         method: 'POST',
@@ -400,14 +418,16 @@
       const data = await res.json();
 
       if (res.ok) {
-        document.getElementById('heroSummary').textContent = data.summary ?? '';
-        document.getElementById('coachInsight').textContent = data.insight ?? '';
-        document.getElementById('nextStepText').textContent = data.next_step ?? '';
+        document.getElementById('answerText').innerHTML =
+          `You've spent <span class="num">£${total.toFixed(0)}</span> this month — ${data.summary ?? ''}`;
+        document.getElementById('nextStepText').textContent = data.next_step ?? '—';
       } else {
-        document.getElementById('coachInsight').textContent = "We'll have your insight ready shortly.";
+        document.getElementById('answerText').innerHTML = `You've spent <span class="num">£${total.toFixed(0)}</span> this month.`;
+        document.getElementById('nextStepText').textContent = "We'll have your next step ready shortly.";
       }
     } catch (err) {
-      document.getElementById('coachInsight').textContent = "We'll have your insight ready shortly.";
+      document.getElementById('answerText').innerHTML = `You've spent <span class="num">£${total.toFixed(0)}</span> this month.`;
+      document.getElementById('nextStepText').textContent = "We'll have your next step ready shortly.";
     }
 
     showHome();
