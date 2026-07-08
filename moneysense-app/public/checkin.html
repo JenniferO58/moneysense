@@ -316,8 +316,8 @@
     el.classList.add('selected');
     setTimeout(async () => {
       await saveCheckin();
-      renderClosing();
       goTo(4);
+      await renderClosing();
     }, 300);
   }
 
@@ -333,16 +333,36 @@
     }, { onConflict: 'user_id,week_start' });
   }
 
-  function renderClosing() {
-    const titleEl = document.getElementById('closing-title');
-    const textEl = document.getElementById('closing-text');
-
+  function fallbackClosingText() {
     if (feeling === 'difficult' || control === false) {
-      textEl.textContent = "Weeks like this happen to everyone. What matters is that you're paying attention — that's already the hardest part. We'll adjust things to feel a little more manageable next week.";
+      return "Weeks like this happen to everyone. What matters is that you're paying attention — that's already the hardest part. We'll adjust things to feel a little more manageable next week.";
     } else if (feeling === 'calm' && control === true) {
-      textEl.textContent = "This week went well — and it shows. Staying consistent like this is exactly what builds confidence over time.";
-    } else {
-      textEl.textContent = "Noticing how your week went is one of the most useful things you can do for your finances — more useful than getting every number right. We'll use this to make next week's guidance feel more like you.";
+      return "This week went well — and it shows. Staying consistent like this is exactly what builds confidence over time.";
+    }
+    return "Noticing how your week went is one of the most useful things you can do for your finances — more useful than getting every number right. We'll use this to make next week's guidance feel more like you.";
+  }
+
+  async function renderClosing() {
+    const textEl = document.getElementById('closing-text');
+    textEl.textContent = 'Thinking about your week…';
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      textEl.textContent = fallbackClosingText();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/checkin/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ feeling, stayed_in_control: control })
+      });
+      const data = await res.json();
+
+      textEl.textContent = (res.ok && data.message) ? data.message : fallbackClosingText();
+    } catch (err) {
+      textEl.textContent = fallbackClosingText();
     }
   }
 
