@@ -88,6 +88,8 @@ Explain the user's financial situation in plain English.
 
 Avoid financial jargon.
 
+IMPORTANT: The app already displays the total spend figure separately, right before your summary is shown. Do NOT restate the total amount or say things like "you've spent £X this month" — the user has already seen that number. Instead, use this sentence to add tone, context, or a general takeaway that goes beyond the figure itself (e.g. how it compares to what feels normal for them, or a one-line reaction to the overall picture).
+
 2. One key insight
 
 Identify the single most meaningful observation.
