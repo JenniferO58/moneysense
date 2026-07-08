@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,170 +9,173 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  :root {
-    --bg: #0A0A0C;
-    --surface: #18181B;
-    --surface-hover: #212124;
-    --surface-border: rgba(255,255,255,0.07);
-    --ink: #F5F5F4;
-    --ink-secondary: #98989F;
-    --ink-muted: #67676D;
-    --accent: #E8794F;
-    --accent-deep: #C8502F;
-  }
+:root {
+–bg: #0A0A0C;
+–surface: #18181B;
+–surface-hover: #212124;
+–surface-border: rgba(255,255,255,0.07);
+–ink: #F5F5F4;
+–ink-secondary: #98989F;
+–ink-muted: #67676D;
+–accent: #E8794F;
+–accent-deep: #C8502F;
+}
 
-  html { overflow-x: hidden; width: 100%; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--ink);
-    max-width: 420px;
-    margin: 0 auto;
-    min-height: 100vh;
-    min-height: 100dvh;
-    -webkit-font-smoothing: antialiased;
-    position: relative;
-    overflow-x: hidden;
-  }
+html { overflow-x: hidden; width: 100%; }
+body {
+font-family: -apple-system, BlinkMacSystemFont, ‘SF Pro Text’, ‘Segoe UI’, Roboto, sans-serif;
+background: var(–bg);
+color: var(–ink);
+max-width: 420px;
+margin: 0 auto;
+min-height: 100vh;
+min-height: 100dvh;
+-webkit-font-smoothing: antialiased;
+position: relative;
+overflow-x: hidden;
+}
 
-  .glow {
-    position: fixed;
-    top: -120px; right: -80px;
-    width: 320px; height: 320px;
-    background: radial-gradient(circle, rgba(232,121,79,0.14) 0%, transparent 70%);
-    pointer-events: none;
-  }
+.glow {
+position: fixed;
+top: -120px; right: -80px;
+width: 320px; height: 320px;
+background: radial-gradient(circle, rgba(232,121,79,0.14) 0%, transparent 70%);
+pointer-events: none;
+}
 
-  .screen {
-    display: none;
-    position: relative;
-    flex-direction: column;
-  }
-  .screen.active { display: flex; }
+.screen {
+display: none;
+position: relative;
+flex-direction: column;
+}
+.screen.active { display: flex; }
 
-  .content { padding: 24px 20px 0; flex: 1; display: flex; flex-direction: column; }
+.content { padding: 24px 20px 0; flex: 1; display: flex; flex-direction: column; }
 
-  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-  .greeting { font-size: 19px; color: var(--ink); font-weight: 700; letter-spacing: -0.3px; }
-  .profile-dot {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #17100A;
-  }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+.greeting { font-size: 19px; color: var(–ink); font-weight: 700; letter-spacing: -0.3px; }
+.profile-dot {
+width: 28px; height: 28px; border-radius: 50%;
+background: var(–accent);
+display: flex; align-items: center; justify-content: center;
+font-size: 12px; font-weight: 700; color: #17100A;
+}
 
-  .question { font-size: 14px; color: var(--ink-secondary); margin-bottom: 14px; font-style: italic; }
+.question { font-size: 14px; color: var(–ink-secondary); margin-bottom: 14px; font-style: italic; }
 
-  .answer { font-size: 19px; line-height: 1.55; font-weight: 460; letter-spacing: -0.2px; }
-  .answer .num { font-weight: 780; color: var(--accent); font-variant-numeric: tabular-nums; }
+.answer { font-size: 19px; line-height: 1.55; font-weight: 460; letter-spacing: -0.2px; }
+.answer .num { font-weight: 780; color: var(–accent); font-variant-numeric: tabular-nums; }
 
-  .stat-block {
-    margin-top: 32px; background: rgba(255,255,255,0.02); border-radius: 14px;
-    padding: 4px 14px;
-  }
-  .stat-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-key { font-size: 12.5px; color: var(--ink-secondary); }
-  .stat-val { font-size: 12.5px; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat-block {
+margin-top: 32px; background: rgba(255,255,255,0.02); border-radius: 14px;
+padding: 4px 14px;
+}
+.stat-row {
+display: flex; justify-content: space-between; align-items: baseline;
+padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-key { font-size: 12.5px; color: var(–ink-secondary); }
+.stat-val { font-size: 12.5px; color: var(–ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat-row.stacked { align-items: flex-start; }
+.stat-val-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.stat-val-actual { font-size: 11px; color: var(–ink-secondary); font-weight: 500; }
 
-  .next-step {
-    margin-top: 34px; padding-left: 14px; border-left: 3px solid var(--accent);
-  }
-  .next-step-label {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--accent); font-weight: 700; margin-bottom: 8px;
-  }
-  .next-step-text {
-    font-size: 13.5px; line-height: 1.55; color: var(--ink-secondary);
-  }
+.next-step {
+margin-top: 34px; padding-left: 14px; border-left: 3px solid var(–accent);
+}
+.next-step-label {
+font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+color: var(–accent); font-weight: 700; margin-bottom: 8px;
+}
+.next-step-text {
+font-size: 13.5px; line-height: 1.55; color: var(–ink-secondary);
+}
 
-  .ask-input {
-    display: flex; align-items: center; gap: 10px;
-    background: transparent; border: 1px solid var(--surface-border);
-    border-radius: 100px; padding: 13px 14px 13px 18px;
-    margin-top: 28px; cursor: pointer;
-  }
-  .ask-input span { font-size: 13px; color: var(--ink-secondary); flex: 1; }
-  .ask-send {
-    width: 26px; height: 26px; border-radius: 50%;
-    border: 1.5px solid var(--accent); background: transparent;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .ask-send svg { width: 12px; height: 12px; color: var(--accent); }
+.ask-input {
+display: flex; align-items: center; gap: 10px;
+background: transparent; border: 1px solid var(–surface-border);
+border-radius: 100px; padding: 13px 14px 13px 18px;
+margin-top: 28px; cursor: pointer;
+}
+.ask-input span { font-size: 13px; color: var(–ink-secondary); flex: 1; }
+.ask-send {
+width: 26px; height: 26px; border-radius: 50%;
+border: 1.5px solid var(–accent); background: transparent;
+display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ask-send svg { width: 12px; height: 12px; color: var(–accent); }
 
-  .nav-dock {
-    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
-    max-width: 380px; width: calc(100% - 44px);
-    background: rgba(24,24,27,0.85);
-    backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 100px; padding: 8px 10px;
-    display: flex; align-items: center; justify-content: space-around;
-    box-shadow: 0 16px 36px -6px rgba(0,0,0,0.5);
-  }
-  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-muted); opacity: 0.4; transition: opacity 0.2s; }
-  .nav-item.active { color: var(--ink); opacity: 1; }
-  .nav-item svg { width: 20px; height: 20px; }
-  .nav-item span { font-size: 10px; font-weight: 600; }
-  .nav-add {
-    width: 42px; height: 42px; border-radius: 50%; background: var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 10px rgba(232,121,79,0.28); flex-shrink: 0; border: none; cursor: pointer;
-    opacity: 1;
-  }
-  .nav-add svg { width: 18px; height: 18px; color: #17100A; }
+.nav-dock {
+position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+max-width: 380px; width: calc(100% - 44px);
+background: rgba(24,24,27,0.85);
+backdrop-filter: blur(24px) saturate(1.4);
+-webkit-backdrop-filter: blur(24px) saturate(1.4);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 100px; padding: 8px 10px;
+display: flex; align-items: center; justify-content: space-around;
+box-shadow: 0 16px 36px -6px rgba(0,0,0,0.5);
+}
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(–ink-muted); opacity: 0.4; transition: opacity 0.2s; }
+.nav-item.active { color: var(–ink); opacity: 1; }
+.nav-item svg { width: 20px; height: 20px; }
+.nav-item span { font-size: 10px; font-weight: 600; }
+.nav-add {
+width: 42px; height: 42px; border-radius: 50%; background: var(–accent);
+display: flex; align-items: center; justify-content: center;
+box-shadow: 0 4px 10px rgba(232,121,79,0.28); flex-shrink: 0; border: none; cursor: pointer;
+opacity: 1;
+}
+.nav-add svg { width: 18px; height: 18px; color: #17100A; }
 
-  .bottom-spacer { height: 120px; }
+.bottom-spacer { height: 120px; }
 
-  /* Loading state */
-  .loading-screen {
-    display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px;
-  }
-  .loading-screen.active { display: flex; }
-  .loading-ring {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    border: 3px solid var(--surface);
-    border-top-color: var(--accent);
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* Loading state */
+.loading-screen {
+display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column;
+align-items: center; justify-content: center; gap: 16px;
+}
+.loading-screen.active { display: flex; }
+.loading-ring {
+width: 28px; height: 28px;
+border-radius: 50%;
+border: 3px solid var(–surface);
+border-top-color: var(–accent);
+animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Add-expense bottom sheet */
-  .sheet-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10;
-  }
-  .sheet-overlay.active { display: block; }
-  .sheet {
-    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    max-width: 420px; width: 100%; background: var(--bg);
-    border: 1px solid var(--surface-border); border-top: 1px solid var(--surface-border);
-    border-radius: 24px 24px 0 0; padding: 24px 20px; z-index: 11;
-    display: none;
-  }
-  .sheet.active { display: block; }
-  .sheet h2 { font-size: 18px; font-weight: 650; margin-bottom: 16px; }
-  .sheet input {
-    width: 100%; padding: 14px; font-size: 16px; border: 1px solid var(--surface-border);
-    border-radius: 12px; margin-bottom: 10px; background: var(--surface); color: var(--ink);
-  }
-  .sheet input::placeholder { color: var(--ink-muted); }
-  .sheet-category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
-  .sheet-chip {
-    padding: 10px 4px; border: 1px solid var(--surface-border); border-radius: 10px;
-    text-align: center; font-size: 12px; cursor: pointer; background: var(--surface); color: var(--ink);
-  }
-  .sheet-chip.selected { background: var(--accent); color: #17100A; font-weight: 600; border-color: var(--accent); }
-  .sheet button.primary {
-    width: 100%; padding: 15px; background: var(--accent); color: #17100A;
-    border: none; border-radius: 14px; font-size: 15px; font-weight: 650; cursor: pointer;
-  }
-  .sheet-status { font-size: 13px; color: var(--ink-muted); margin-top: 10px; text-align: center; }
+/* Add-expense bottom sheet */
+.sheet-overlay {
+display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10;
+}
+.sheet-overlay.active { display: block; }
+.sheet {
+position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+max-width: 420px; width: 100%; background: var(–bg);
+border: 1px solid var(–surface-border); border-top: 1px solid var(–surface-border);
+border-radius: 24px 24px 0 0; padding: 24px 20px; z-index: 11;
+display: none;
+}
+.sheet.active { display: block; }
+.sheet h2 { font-size: 18px; font-weight: 650; margin-bottom: 16px; }
+.sheet input {
+width: 100%; padding: 14px; font-size: 16px; border: 1px solid var(–surface-border);
+border-radius: 12px; margin-bottom: 10px; background: var(–surface); color: var(–ink);
+}
+.sheet input::placeholder { color: var(–ink-muted); }
+.sheet-category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+.sheet-chip {
+padding: 10px 4px; border: 1px solid var(–surface-border); border-radius: 10px;
+text-align: center; font-size: 12px; cursor: pointer; background: var(–surface); color: var(–ink);
+}
+.sheet-chip.selected { background: var(–accent); color: #17100A; font-weight: 600; border-color: var(–accent); }
+.sheet button.primary {
+width: 100%; padding: 15px; background: var(–accent); color: #17100A;
+border: none; border-radius: 14px; font-size: 15px; font-weight: 650; cursor: pointer;
+}
+.sheet-status { font-size: 13px; color: var(–ink-muted); margin-top: 10px; text-align: center; }
 
 </style>
 </head>
@@ -186,34 +190,42 @@
 <div class="screen" id="homeScreen">
   <div class="content">
 
-    <div class="topbar">
-      <div class="greeting" id="greetingText">Good morning</div>
-      <div class="profile-dot" id="profileDot"></div>
-    </div>
+```
+<div class="topbar">
+  <div class="greeting" id="greetingText">Good morning</div>
+  <div class="profile-dot" id="profileDot"></div>
+</div>
 
-    <div class="question">How's my money looking this month?</div>
+<div class="question">How's my money looking this month?</div>
 
-    <div class="answer" id="answerText">—</div>
+<div class="answer" id="answerText">—</div>
 
-    <div class="stat-block">
-      <div class="stat-row"><span class="stat-key">Top category</span><span class="stat-val" id="statTopCategory">—</span></div>
-      <div class="stat-row"><span class="stat-key">Vs. last month</span><span class="stat-val" id="statVsLastMonth">—</span></div>
-      <div class="stat-row"><span class="stat-key">Comfortable range</span><span class="stat-val" id="statComfortRange">—</span></div>
-    </div>
+<div class="stat-block">
+  <div class="stat-row"><span class="stat-key">Top category</span><span class="stat-val" id="statTopCategory">—</span></div>
+  <div class="stat-row"><span class="stat-key">Vs. last month</span><span class="stat-val" id="statVsLastMonth">—</span></div>
+  <div class="stat-row stacked">
+    <span class="stat-key">Comfortable range</span>
+    <span class="stat-val-stack" id="statComfortRangeStack">
+      <span class="stat-val" id="statComfortRange">—</span>
+    </span>
+  </div>
+</div>
 
-    <div class="next-step">
-      <div class="next-step-label">What I'd do next</div>
-      <div class="next-step-text" id="nextStepText">—</div>
-    </div>
+<div class="next-step">
+  <div class="next-step-label">What I'd do next</div>
+  <div class="next-step-text" id="nextStepText">—</div>
+</div>
 
-    <div class="ask-input" onclick="window.location.href='/ask.html'">
-      <span>Ask a follow-up…</span>
-      <div class="ask-send">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 14 0M13 6l6 6-6 6"/></svg>
-      </div>
-    </div>
+<div class="ask-input" onclick="window.location.href='/ask.html'">
+  <span>Ask a follow-up…</span>
+  <div class="ask-send">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 14 0M13 6l6 6-6 6"/></svg>
+  </div>
+</div>
 
-    <div class="bottom-spacer"></div>
+<div class="bottom-spacer"></div>
+```
+
   </div>
 </div>
 
@@ -400,14 +412,14 @@
     }
     document.getElementById('statVsLastMonth').textContent = vsLastMonthText;
 
-    // Comfortable range, from onboarding
+    // Comfortable range, from onboarding — the stated goal
     const { data: profile } = await supabaseClient
       .from('users')
       .select('weekly_comfortable_range')
       .eq('id', session.user.id)
       .maybeSingle();
-    document.getElementById('statComfortRange').textContent =
-      RANGE_LABELS[profile?.weekly_comfortable_range] ?? 'Not set yet';
+    const rangeLabel = RANGE_LABELS[profile?.weekly_comfortable_range] ?? 'Not set yet';
+    document.getElementById('statComfortRange').textContent = rangeLabel;
 
     // Real AI response — summary embedded into the answer sentence with the number
     try {
@@ -421,6 +433,17 @@
         document.getElementById('answerText').innerHTML =
           `You've spent <span class="num">£${total.toFixed(0)}</span> this month — ${data.summary ?? ''}`;
         document.getElementById('nextStepText').textContent = data.next_step ?? '—';
+
+        // Complete the comfortable-range stat with the real weekly average,
+        // so it shows both the goal and the actual — same pattern as the
+        // other two stats, rather than only showing what was stated.
+        if (typeof data.avg_weekly === 'number' && profile?.weekly_comfortable_range) {
+          const stackEl = document.getElementById('statComfortRangeStack');
+          const actualLine = document.createElement('span');
+          actualLine.className = 'stat-val-actual';
+          actualLine.textContent = `~£${data.avg_weekly.toFixed(0)}/wk actual`;
+          stackEl.appendChild(actualLine);
+        }
       } else {
         document.getElementById('answerText').innerHTML = `You've spent <span class="num">£${total.toFixed(0)}</span> this month.`;
         document.getElementById('nextStepText').textContent = "We'll have your next step ready shortly.";
