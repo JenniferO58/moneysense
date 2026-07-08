@@ -1,8 +1,53 @@
 <!DOCTYPE html>
-<html>
-<head><title>MoneySense AI</title></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoneySense AI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body {
+    background: #0A0A0C; margin: 0; min-height: 100vh; min-height: 100dvh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ring {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 3px solid #18181B; border-top-color: #E8794F;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
 <body>
-  <h1>MoneySense AI — backend under construction</h1>
-  <p>Test the connection at <a href="/api/test-connection">/api/test-connection</a></p>
+
+<div class="ring"></div>
+
+<script>
+  const supabaseClient = window.supabase.createClient(
+    'https://grsrjczmrmtstbsezbxj.supabase.co',
+    'sb_publishable_gp0oWf_Ao0N9UxOwtKxi9g_-U23nCyL'
+  );
+
+  async function route() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+      window.location.href = '/onboarding.html';
+      return;
+    }
+
+    const { data: profile } = await supabaseClient
+      .from('users')
+      .select('money_relationship, weekly_comfortable_range')
+      .eq('id', session.user.id)
+      .maybeSingle();
+
+    const fullyOnboarded = profile?.money_relationship && profile?.weekly_comfortable_range;
+    window.location.href = fullyOnboarded ? '/home.html' : '/onboarding.html';
+  }
+
+  route();
+</script>
+
 </body>
 </html>
