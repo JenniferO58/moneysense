@@ -221,8 +221,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Pull all of this user's transactions (MVP: no period logic yet,
-    // just everything since they signed up)
+    // Pull all transactions — the broader history is needed for weekly
+    // pattern detection (Money Moments) below, but the PRIMARY total and
+    // summary must be scoped to the current calendar month, matching
+    // exactly what the Home screen displays. Without this, the AI has no
+    // concept of "this month" and may describe the same number using a
+    // different timeframe than the UI does.
     const { data: transactions, error: fetchError } = await supabaseAdmin
       .from('transactions')
       .select('amount, note, spent_on, categories(name)')
@@ -230,6 +234,10 @@ export default async function handler(req, res) {
       .order('spent_on', { ascending: false });
 
     if (fetchError) throw fetchError;
+
+    const now = new Date();
+    const monthStartStr = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const monthTransactions = (transactions ?? []).filter(t => t.spent_on >= monthStartStr);
 
     // Pull the personalization context that makes this an actual coach
     // rather than a generic summary tool.
@@ -247,7 +255,7 @@ export default async function handler(req, res) {
       .limit(1)
       .maybeSingle();
 
-    if (!transactions || transactions.length === 0) {
+    if (monthTransactions.length === 0) {
       const relationshipOpeners = {
         confident: "You said you feel confident and in control — let's put some real numbers behind that.",
         inconsistent: "You said you manage okay but lose consistency — starting here is exactly how that changes.",
@@ -255,17 +263,17 @@ export default async function handler(req, res) {
         stressed: "You said money's been a source of stress — no pressure here, just start whenever you're ready."
       };
       return res.status(200).json({
-        summary: relationshipOpeners[userProfile?.money_relationship] ?? "You haven't added any spending yet.",
+        summary: relationshipOpeners[userProfile?.money_relationship] ?? "You haven't added anything this month yet.",
         insight: "Once you add a few expenses, we'll start finding patterns together.",
         next_step: "Add your first expense to get going."
       });
     }
 
-    const total = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+    const total = monthTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
 
-    // Group into calendar weeks so the AI can notice genuine multi-week
-    // patterns (Money Moments) — only meaningful once several weeks exist,
-    // and we never fabricate this if there's only one period's worth of data.
+    // Weekly history for pattern detection uses the FULL transaction
+    // history (not just this month) — Money Moments needs multiple weeks
+    // to spot genuine trends, even ones that started last month.
     const weekBuckets = {};
     for (const t of transactions) {
       const date = new Date(t.spent_on);
@@ -302,7 +310,12 @@ export default async function handler(req, res) {
       '250to500': [250, 500],
       '500plus': [500, Infinity]
     };
-    const weekCount = Math.max(Object.keys(weekBuckets).length, 1);
+    // Only count weeks that actually fall within this month — weekBuckets
+    // spans all-time history, but the average must match the scope of
+    // `total` above, or it silently understates real weekly spending
+    // once a user has more than one month of data.
+    const weeksThisMonth = Object.keys(weekBuckets).filter(weekKey => weekKey >= monthStartStr).length;
+    const weekCount = Math.max(weeksThisMonth, 1);
     const avgWeekly = total / weekCount;
 
     let baselineContext = '';
@@ -323,11 +336,13 @@ ${lastCheckin?.feeling === 'difficult' || lastCheckin?.stayed_in_control === fal
   ? '\nIMPORTANT: Their last check-in was difficult or they felt out of control. Keep this response especially gentle, lead with acknowledgement before any observation, and keep the next step small and easy — do not introduce more than one new idea.'
   : ''}
 
-USER SPENDING DATA:
+USER SPENDING DATA (this calendar month so far):
 Total spend: £${total.toFixed(2)}
 Transactions:
-${transactions.map(t => `- ${t.categories?.name ?? 'Other'}: £${Number(t.amount).toFixed(2)}${t.note ? ` (${t.note})` : ''}`).join('\n')}
-${weeklyHistoryText ? `\nWEEKLY HISTORY (oldest to most recent):\n${weeklyHistoryText}\n\nIf a genuine pattern stands out across these weeks, that's the strongest candidate for the one insight. If nothing genuine stands out, use a single-period observation instead.` : ''}
+${monthTransactions.map(t => `- ${t.categories?.name ?? 'Other'}: £${Number(t.amount).toFixed(2)}${t.note ? ` (${t.note})` : ''}`).join('\n')}
+
+IMPORTANT: The figures above are for the current calendar month, not a single week. Always describe this period as "this month" in your response, never "this week" — the app displays this exact total as a monthly figure, so your wording must match.
+${weeklyHistoryText ? `\nWEEKLY HISTORY (oldest to most recent, for spotting patterns only — not the primary total above):\n${weeklyHistoryText}\n\nIf a genuine pattern stands out across these weeks, that's the strongest candidate for the one insight. If nothing genuine stands out, use a single-period observation instead.` : ''}
 
 Respond using only the JSON format specified in your instructions.`;
 
@@ -368,7 +383,7 @@ Respond using only the JSON format specified in your instructions.`;
       return res.status(502).json({ error: 'AI response missing required fields', parsed });
     }
 
-    return res.status(200).json(parsed);
+    return res.status(200).json({ ...parsed, avg_weekly: avgWeekly });
 
   } catch (err) {
     console.error('Summary generation error:', err);
