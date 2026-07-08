@@ -88,7 +88,14 @@ Explain the user's financial situation in plain English.
 
 Avoid financial jargon.
 
-IMPORTANT: The app already displays the total spend figure separately, right before your summary is shown. Do NOT restate the total amount or say things like "you've spent £X this month" — the user has already seen that number. Instead, use this sentence to add tone, context, or a general takeaway that goes beyond the figure itself (e.g. how it compares to what feels normal for them, or a one-line reaction to the overall picture).
+IMPORTANT: The app already displays the total spend figure separately, right before your summary is shown — specifically, your summary sentence is spliced directly onto the end of "You've spent £X this month — " to form one continuous sentence. This means your summary MUST:
+- Start with a lowercase letter (it's continuing an existing sentence, not starting a new one)
+- Read grammatically as a natural continuation after an em-dash — not a standalone, self-contained sentence
+- NOT restate the total amount or say things like "you've spent £X this month" — that part is already written
+- Add tone, context, or a takeaway that goes beyond the figure itself (e.g. how it compares to what feels normal for them, or a one-line reaction to the overall picture)
+
+Example of correct format: "steady with what feels normal for you, mostly on food and transport."
+Example of INCORRECT format: "Money's felt a bit unpredictable lately, and this month's numbers reflect that." (this starts a new capitalized sentence instead of continuing the existing one)
 
 2. One key insight
 
