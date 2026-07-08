@@ -534,7 +534,9 @@
     } else if (!profile?.weekly_comfortable_range) {
       goTo(5);
     } else {
-      goTo(6);
+      // Fully onboarded already — this isn't a first-time setup anymore,
+      // send them straight to the real app instead of back into onboarding.
+      window.location.href = '/home.html';
     }
   }
 
